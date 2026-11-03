@@ -7,7 +7,7 @@ export const aiGenerationFunction = inngest.createFunction(
     id: "genrate-audio-clip",
     retries: 2,
     throttle: {
-      limit: 3,
+      limit: 10,
       period: "1m",
       key: "event.data.userId",
     },
@@ -88,7 +88,7 @@ export const aiGenerationFunction = inngest.createFunction(
       return response.json() as Promise<{ audio_url: string; s3_key: string }>;
     });
 
-    const history = await step.run("save-to-history", async () => {
+    await step.run("save-to-history", async () => {
       return await db.generatedAudioClip.update({
         where: { id: audioClip.id },
         data: {
@@ -97,17 +97,7 @@ export const aiGenerationFunction = inngest.createFunction(
       });
     });
 
-    const deductCredits = await step.run("deduct-credits", async () => {
-      return await db.user.update({
-        where: { id: audioClip.userId },
-        data: {
-          credits: {
-            decrement: 50,
-          },
-        },
-      });
-    });
-
+    // 100% Free - No credits deducted
     return { success: true };
   },
 );

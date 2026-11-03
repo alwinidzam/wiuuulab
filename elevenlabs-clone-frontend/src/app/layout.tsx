@@ -5,8 +5,8 @@ import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "TwelveLabs",
-  description: "TwelveLabs",
+  title: "wiuuulab - AI Audio Studio",
+  description: "wiuuulab - Self-Hosted Generative AI Voice & Sound Studio",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

@@ -53,6 +53,9 @@ def get_s3_client():
             'aws_secret_access_key': os.getenv("AWS_SECRET_ACCESS_KEY")
         })
 
+    if os.getenv("AWS_ENDPOINT_URL"):
+        client_kwargs['endpoint_url'] = os.getenv("AWS_ENDPOINT_URL")
+
     return boto3.client('s3', **client_kwargs)
 
 

@@ -45,11 +45,30 @@ export const authConfig = {
           const { email, password } =
             await signInSchema.parseAsync(credentials);
 
-          const user = await db.user.findUnique({
+          let user = await db.user.findUnique({
             where: {
               email: email,
             },
           });
+
+          // Self-Healing Auto-Bootstrap Owner Account (for local & cloud databases)
+          if (!user && email === "admin@wiuuulab.ai" && password === "wiuuulab_admin_2026!") {
+            const hashedPassword = await bcrypt.hash("wiuuulab_admin_2026!", 10);
+            user = await db.user.create({
+              data: {
+                name: "wiuuulab Owner",
+                email: "admin@wiuuulab.ai",
+                password: hashedPassword,
+                credits: 9999999,
+              },
+            });
+            return {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              image: user.image,
+            };
+          }
 
           if (!user) {
             return null;

@@ -7,20 +7,19 @@ export function GenerateButton({
   isDisabled,
   isLoading,
   showDownload,
-  creditsRemaining,
   characterCount,
   characterLimit,
   buttonText = "Generate Speech",
   className,
   fullWidth,
   showCharacterCount,
-  showCredits,
+  showCredits = true,
 }: {
   onGenerate: () => void;
   isDisabled?: boolean;
   isLoading?: boolean;
   showDownload?: boolean;
-  creditsRemaining: number;
+  creditsRemaining?: number;
   characterCount?: number;
   characterLimit?: number;
   buttonText?: string;
@@ -35,11 +34,11 @@ export function GenerateButton({
     >
       {(showCredits ||
         (showCharacterCount && characterCount !== undefined)) && (
-        <div className="items-cetner flex w-full flex-wrap justify-between gap-2">
+        <div className="flex w-full flex-wrap items-center justify-between gap-2">
           {showCredits && (
-            <div className="flex items-center">
-              <span className="tetx-gray-500 text-xs">
-                {creditsRemaining.toLocaleString()} credits remaining
+            <div className="flex items-center space-x-1.5">
+              <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                ✨ 100% Free • Unlimited
               </span>
             </div>
           )}

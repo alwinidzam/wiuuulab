@@ -65,7 +65,7 @@ export default function SignInPage() {
       <div className="relative w-full lg:w-1/2">
         <div className="absolute left-8 top-6">
           <span className="text-xl font-bold tracking-tight text-black">
-            12TwelveLabs
+            wiuuulab
           </span>
         </div>
 
@@ -160,18 +160,6 @@ export default function SignInPage() {
                   "Sign in"
                 )}
               </button>
-
-              <div className="text-center">
-                <span className="text-sm text-gray-600">
-                  Don't have an account?{" "}
-                  <a
-                    className="font-medium text-black underline"
-                    href="/app/sign-up"
-                  >
-                    Sign up
-                  </a>
-                </span>
-              </div>
             </form>
           </div>
         </div>

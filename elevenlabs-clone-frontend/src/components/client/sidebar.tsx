@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import {
   IoChatboxOutline,
+  IoKeyOutline,
   IoMicOutline,
   IoMusicalNotesOutline,
   IoPersonOutline,
   IoPinOutline,
 } from "react-icons/io5";
-import { isBoxedPrimitive } from "util/types";
 
 export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
   const pathname = usePathname();
@@ -51,8 +51,8 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
       onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
       <div className="flex items-center justify-between">
-        <h1 className={`text-xl font-bold ${!isExpanded && "hidden"}`}>
-          12TwelveLabs
+        <h1 className={`text-xl font-bold tracking-tight text-black ${!isExpanded && "hidden"}`}>
+          wiuuulab
         </h1>
         {!isMobile && (
           <button
@@ -66,8 +66,8 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
               {isExpanded ? (
                 <IoPinOutline className="h-5 w-5" />
               ) : (
-                <div className="flex h-fit w-fit items-center justify-center rounded-lg bg-white px-3 py-2 shadow">
-                  <span className="text-md font-bold text-black">12</span>
+                <div className="flex h-fit w-fit items-center justify-center rounded-lg bg-black px-2.5 py-1 text-white shadow">
+                  <span className="text-sm font-bold">W</span>
                 </div>
               )}
             </div>
@@ -101,6 +101,16 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
           href="/app/sound-effects/generate"
         >
           Sound Effects
+        </SidebarButton>
+
+        <SectionHeader isExpanded={isExpanded}>Developers</SectionHeader>
+        <SidebarButton
+          icon={<IoKeyOutline />}
+          isExpanded={isExpanded}
+          isActive={pathname.includes("/app/api-keys")}
+          href="/app/api-keys"
+        >
+          API Keys
         </SidebarButton>
       </nav>
 

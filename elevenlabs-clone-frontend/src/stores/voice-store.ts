@@ -2,49 +2,125 @@ import { create } from "zustand";
 import { ServiceType } from "~/types/services";
 
 const GRADIENT_COLORS = [
-  "linear-gradient(45deg, #8b5cf6, #ec4899, #ffffff, #3b82f6)",
-  "linear-gradient(45deg, #3b82f6, #10b981, #ffffff, #f59e0b)",
-  "linear-gradient(45deg, #ec4899, #f97316, #ffffff, #8b5cf6)",
-  "linear-gradient(45deg, #10b981, #3b82f6, #ffffff, #f43f5e)",
-  "linear-gradient(45deg, #f43f5e, #f59e0b, #ffffff, #10b981)",
+  "linear-gradient(45deg, #ec4899, #f43f5e, #ffffff, #8b5cf6)", // Pink/Rose (Gadis)
+  "linear-gradient(45deg, #f59e0b, #ec4899, #ffffff, #10b981)", // Amber/Pink (Siti)
+  "linear-gradient(45deg, #3b82f6, #06b6d4, #ffffff, #10b981)", // Blue/Cyan (Ardi)
+  "linear-gradient(45deg, #8b5cf6, #3b82f6, #ffffff, #ec4899)", // Purple/Blue (Andreas)
+  "linear-gradient(45deg, #10b981, #f59e0b, #ffffff, #f43f5e)", // Green/Amber (Woman)
+  "linear-gradient(45deg, #ef4444, #f97316, #ffffff, #eab308)", // Red/Orange (Trump)
 ];
 
 export interface Voice {
   id: string;
   name: string;
+  description?: string;
   gradientColors: string;
   service: ServiceType;
 }
 
 const voices: Voice[] = [
+  // Indonesian Native Neural Voices (100% Logat, Dialek, Slang, Formal, Kasual & Storytelling)
   {
-    id: "andreas",
-    name: "Andreas",
+    id: "alwi",
+    name: "Alwi (Cinematic Horror Narrator 🎙️)",
+    description: "Medium-low bariton, hangat, sedikit husky, tempo tenang — narasi horor, misteri & creepypasta",
+    gradientColors: "linear-gradient(45deg, #1e293b, #475569, #0f172a, #334155)",
+    service: "styletts2",
+  },
+  {
+    id: "athalea",
+    name: "Athalea (Atmospheric Storyteller 🕯️)",
+    description: "Tenang, dingin, misterius, jeda dramatis — dongeng gelap, kisah nyata horor & legenda",
+    gradientColors: "linear-gradient(45deg, #831843, #be185d, #fda4af, #500724)",
+    service: "styletts2",
+  },
+  {
+    id: "gadis",
+    name: "Gadis / Naya (Indonesian Storyteller 📖)",
+    description: "Hangat, empatik, jeda dramatis — sangat cocok untuk dongeng, novel, dan creepypasta",
     gradientColors: GRADIENT_COLORS[0]!,
     service: "styletts2",
   },
   {
-    id: "woman",
-    name: "Woman",
+    id: "serena",
+    name: "Serena (Indonesian Heartfelt & Audiobooks 🎙️)",
+    description: "Lembut, menenangkan, penuh emosi mendalam untuk narasi reflektif dan puisi",
     gradientColors: GRADIENT_COLORS[1]!,
     service: "styletts2",
   },
   {
+    id: "siti",
+    name: "Siti (Indonesian Casual & Jaksel Slang 🌸)",
+    description: "Luwes, santai, fasih bahasa gaul, partikel tutur (dong, sih, deh) & gaya tongkrongan",
+    gradientColors: GRADIENT_COLORS[2]!,
+    service: "styletts2",
+  },
+  {
+    id: "andi",
+    name: "Andi / Putra (Indonesian Casual & Creator 🎧)",
+    description: "Pemuda santai, energik, luwes gaul untuk konten YouTube, TikTok, dan podcast",
+    gradientColors: GRADIENT_COLORS[3]!,
+    service: "styletts2",
+  },
+  {
+    id: "mahaputra",
+    name: "Mahaputra (Indonesian Formal & News Anchor 📰)",
+    description: "Artikulasi baku EYD, tegas, berwibawa — sempurna untuk berita resmi & presentasi korporat",
+    gradientColors: GRADIENT_COLORS[4]!,
+    service: "styletts2",
+  },
+  {
+    id: "ujang",
+    name: "Ujang (Indonesian Javanese Accent / Medok 🌿)",
+    description: "Logat Jawa autentik yang halus, ramah, dan menenangkan untuk konten daerah",
+    gradientColors: GRADIENT_COLORS[5]!,
+    service: "styletts2",
+  },
+  {
+    id: "ardi",
+    name: "Ardi (Indonesian Narrator & Documentary 🎬)",
+    description: "Bariton dalam, sinematik, cocok untuk dokumenter sains dan podcast",
+    gradientColors: GRADIENT_COLORS[5]!,
+    service: "styletts2",
+  },
+
+  // English & Cloned Voices
+  {
     id: "andreas",
-    name: "Andreas",
+    name: "Andreas (English Deep Narrative)",
+    gradientColors: GRADIENT_COLORS[3]!,
+    service: "styletts2",
+  },
+  {
+    id: "woman",
+    name: "Woman (English Expressive)",
+    gradientColors: GRADIENT_COLORS[4]!,
+    service: "styletts2",
+  },
+
+  // Seed-VC Voice Changer
+  {
+    id: "gadis",
+    name: "Gadis (Indonesian Female Storyteller)",
     gradientColors: GRADIENT_COLORS[0]!,
     service: "seedvc",
   },
   {
+    id: "andreas",
+    name: "Andreas (Male Timbre)",
+    gradientColors: GRADIENT_COLORS[3]!,
+    service: "seedvc",
+  },
+  {
     id: "woman",
-    name: "Woman",
-    gradientColors: GRADIENT_COLORS[1]!,
+    name: "Woman (Female Timbre)",
+    gradientColors: GRADIENT_COLORS[4]!,
     service: "seedvc",
   },
   {
     id: "trump",
-    name: "Trump",
-    gradientColors: GRADIENT_COLORS[2]!,
+    name: "Trump (Voice Clone)",
+    gradientColors: GRADIENT_COLORS[5]!,
     service: "seedvc",
   },
 ];
