@@ -7,6 +7,13 @@ export function middleware(request: NextRequest) {
     request.cookies.get("next-auth.session-token")?.value;
 
   const path = request.nextUrl.pathname;
+
+  if (path === "/") {
+    return NextResponse.redirect(
+      new URL("/app/speech-synthesis/text-to-speech", request.url),
+    );
+  }
+
   const isAuthRoute = path === "/app/sign-in" || path === "/app/sign-up";
   const isProtectedRoute = path.startsWith("/app/") && !isAuthRoute;
 
@@ -26,5 +33,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app/:path*"],
+  matcher: ["/", "/app/:path*"],
 };
