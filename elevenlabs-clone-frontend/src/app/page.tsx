@@ -46,21 +46,11 @@ export default function LoginPage() {
       setIsLoading(true);
       setError(null);
 
-      const signInResult = await signIn("credentials", {
-        redirect: false,
+      await signIn("credentials", {
         email: data.email,
         password: data.password,
+        redirectTo: "/app/speech-synthesis/text-to-speech",
       });
-
-      if (!signInResult?.error) {
-        router.push("/app/speech-synthesis/text-to-speech");
-      } else {
-        setError(
-          signInResult.error === "CredentialsSignin"
-            ? "Email atau kata sandi tidak cocok. Silakan periksa kembali."
-            : "Terjadi kesalahan saat masuk. Silakan coba lagi.",
-        );
-      }
     } catch (err: any) {
       setError("Terjadi kesalahan sistem. Silakan coba beberapa saat lagi.");
     } finally {
