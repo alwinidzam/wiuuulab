@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { synthesizeSpeechDirect } from "~/lib/tts-engine";
+import { synthesizeSpeechDirect, synthesizeSoundEffect } from "~/lib/tts-engine";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { ServiceType } from "~/types/services";
@@ -117,15 +117,18 @@ export async function generateSpeechToSpeech(
   };
 }
 
-export async function generateSoundEffect(prompt: string) {
+export async function generateSoundEffect(
+  prompt: string,
+  options?: { duration_seconds?: number; prompt_influence?: number },
+) {
   const session = await auth();
   if (!session?.user.id) {
     throw new Error("User not authenticated");
   }
 
-  const { dataUrl, durationEstimate } = await synthesizeSpeechDirect(
+  const { dataUrl, durationEstimate } = await synthesizeSoundEffect(
     prompt,
-    "alwi",
+    options,
   );
 
   const audioClipJob = await db.generatedAudioClip.create({

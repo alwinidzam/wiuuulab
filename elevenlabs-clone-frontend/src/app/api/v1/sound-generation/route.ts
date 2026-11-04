@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { env } from "~/env";
+import { synthesizeSoundEffect } from "~/lib/tts-engine";
 import { validateApiKey } from "~/server/api-auth";
 import { db } from "~/server/db";
 
@@ -11,7 +11,12 @@ export async function POST(request: NextRequest) {
 
   const { user } = authResult;
 
-  let body: { text?: string; prompt?: string };
+  let body: {
+    text?: string;
+    prompt?: string;
+    duration_seconds?: number;
+    prompt_influence?: number;
+  };
   try {
     body = await request.json();
   } catch {
@@ -24,52 +29,30 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const backendRes = await fetch(env.MAKE_AN_AUDIO_API_ROUTE + "/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: env.BACKEND_API_KEY,
-      },
-      body: JSON.stringify({ prompt }),
-    });
-
-    if (!backendRes.ok) {
-      return Response.json(
-        { error: "Sound generation backend error", status: backendRes.statusText },
-        { status: backendRes.status }
-      );
-    }
-
-    const { audio_url, s3_key } = (await backendRes.json()) as {
-      audio_url: string;
-      s3_key: string;
-    };
-
-    await db.user.update({
-      where: { id: user.id },
-      data: { credits: { decrement: 50 } },
+    const { buffer, dataUrl } = await synthesizeSoundEffect(prompt, {
+      duration_seconds: body.duration_seconds,
+      prompt_influence: body.prompt_influence,
     });
 
     await db.generatedAudioClip.create({
       data: {
         userId: user.id,
         text: prompt,
-        voice: "sfx",
-        s3Key: s3_key,
+        voice: "sound-fx",
+        s3Key: dataUrl,
         service: "make-an-audio",
+        failed: false,
       },
     });
 
-    const audioRes = await fetch(audio_url);
-    const audioBuffer = await audioRes.arrayBuffer();
-
-    return new Response(audioBuffer, {
+    return new Response(buffer, {
       headers: {
-        "Content-Type": "audio/wav",
-        "Content-Length": audioBuffer.byteLength.toString(),
+        "Content-Type": "audio/mpeg",
+        "Content-Length": buffer.length.toString(),
       },
     });
   } catch (error: any) {
+    console.error("API Sound generation error:", error);
     return Response.json(
       { error: "Internal SFX generation error", detail: error?.message },
       { status: 500 }

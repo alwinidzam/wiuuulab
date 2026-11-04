@@ -231,10 +231,11 @@ export async function getValidElevenToken(): Promise<string> {
     body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(ELEVEN_REFRESH_TOKEN)}`,
   });
   const data = await res.json();
-  if (!data.access_token) {
+  const token = data.id_token || data.access_token;
+  if (!token) {
     throw new Error("Failed to refresh ElevenLabs access token: " + JSON.stringify(data));
   }
-  cachedAccessToken = data.access_token;
+  cachedAccessToken = token;
   tokenExpiry = now + parseInt(data.expires_in, 10) * 1000;
   return cachedAccessToken!;
 }
@@ -384,4 +385,88 @@ export async function synthesizeSpeechDirect(
   }
 
   throw new Error("ElevenLabs neural synthesis unavailable. Mohon periksa koneksi token ElevenLabs.");
+}
+
+export async function synthesizeSoundEffect(
+  prompt: string,
+  options?: {
+    duration_seconds?: number;
+    prompt_influence?: number;
+  }
+): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
+  const safePrompt = prompt.trim();
+  const duration = options?.duration_seconds ?? Math.min(10, Math.max(3, Math.round(safePrompt.length / 12)));
+  const promptInfluence = options?.prompt_influence ?? 0.3;
+
+  // 1. Primary: Official ElevenLabs API Key
+  const elevenApiKey = process.env.ELEVENLABS_API_KEY || "sk_9424176c8c0b66e8baa2b5f6497ec4ed23e7f3b4023039d6";
+  if (elevenApiKey) {
+    try {
+      const res = await fetch("https://api.elevenlabs.io/v1/sound-generation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "xi-api-key": elevenApiKey,
+        },
+        body: JSON.stringify({
+          text: safePrompt,
+          duration_seconds: duration,
+          prompt_influence: promptInfluence,
+        }),
+      });
+
+      if (res.ok) {
+        const arrayBuffer = await res.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const dataUrl = `data:audio/mpeg;base64,${buffer.toString("base64")}`;
+        const mins = Math.floor(duration / 60);
+        const secs = Math.round(duration % 60);
+        return {
+          buffer,
+          dataUrl,
+          durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
+        };
+      } else {
+        console.warn("ElevenLabs SFX API key returned:", res.status, await res.text());
+      }
+    } catch (err) {
+      console.warn("ElevenLabs SFX API call error:", err);
+    }
+  }
+
+  // 2. Secondary: Bearer Token via ElevenLabs US endpoint
+  try {
+    const token = await getValidElevenToken();
+    const res = await fetch("https://api.us.elevenlabs.io/v1/sound-generation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+        origin: "https://elevenlabs.io",
+        referer: "https://elevenlabs.io/",
+      },
+      body: JSON.stringify({
+        text: safePrompt,
+        duration_seconds: duration,
+        prompt_influence: promptInfluence,
+      }),
+    });
+
+    if (res.ok) {
+      const arrayBuffer = await res.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const dataUrl = `data:audio/mpeg;base64,${buffer.toString("base64")}`;
+      const mins = Math.floor(duration / 60);
+      const secs = Math.round(duration % 60);
+      return {
+        buffer,
+        dataUrl,
+        durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
+      };
+    }
+  } catch (err) {
+    console.warn("ElevenLabs SFX Bearer endpoint error:", err);
+  }
+
+  throw new Error("Gagal menghasilkan efek suara AI. Silakan periksa koneksi ElevenLabs.");
 }
