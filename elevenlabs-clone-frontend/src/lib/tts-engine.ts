@@ -175,11 +175,12 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
   }
 
   if (key.includes("serena")) {
+    // Serena: Deep Heartfelt Storyteller & Audiobook Narrator (Warm F0 ~200Hz, calm tempo)
     const rateVal = Math.round(-12 * speedMultiplier);
     return {
       voiceId: "id-ID-GadisNeural",
       rate: `${rateVal}%`,
-      pitch: "-6Hz",
+      pitch: "-10Hz",
     };
   }
 
@@ -229,6 +230,54 @@ export async function synthesizeSpeechDirect(
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
   const isFormal = voiceKey.includes("formal") || voiceKey.includes("mahaputra") || (options?.stability ?? 0.5) >= 0.7;
   const processedText = normalizeText(text, isFormal);
+
+  // If ELEVENLABS_API_KEY is configured, allow official ElevenLabs direct passthrough for mapped voices
+  if (process.env.ELEVENLABS_API_KEY) {
+    const ELEVENLABS_VOICE_MAP: Record<string, string> = {
+      serena: "fpsPI3vlnQ0anCTPiHk5",
+      ongky: "5YVVTVlHuEcIu0JBLbEF",
+      bowo: "LxiqOV1uxBCgYTeitAHf",
+      adam: "bfGb7JTLUnZebZRiFYyq",
+    };
+    const elevenVoiceId = ELEVENLABS_VOICE_MAP[voiceKey.toLowerCase().trim()];
+    if (elevenVoiceId) {
+      try {
+        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "xi-api-key": process.env.ELEVENLABS_API_KEY,
+          },
+          body: JSON.stringify({
+            text: processedText,
+            model_id: "eleven_multilingual_v2",
+            voice_settings: {
+              stability: options?.stability ?? 0.38,
+              similarity_boost: 0.85,
+            },
+          }),
+        });
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          const base64Audio = buffer.toString("base64");
+          const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
+          const wordCount = processedText.split(/\s+/).length;
+          const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
+          const mins = Math.floor(durationSeconds / 60);
+          const secs = durationSeconds % 60;
+          return {
+            buffer,
+            dataUrl,
+            durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
+          };
+        }
+      } catch (err) {
+        console.warn("ElevenLabs direct passthrough failed, falling back to calibrated neural engine:", err);
+      }
+    }
+  }
+
   const config = getVoiceConfig(voiceKey, options?.speed ?? 1.0, options?.stability ?? 0.5);
 
   const tts = new MsEdgeTTS();
