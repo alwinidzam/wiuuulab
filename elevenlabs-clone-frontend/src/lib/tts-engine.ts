@@ -82,19 +82,19 @@ const INDONESIAN_FORMAL_MAP: [RegExp, string][] = [
 export function normalizeText(text: string, isFormal = false): string {
   let result = text.replace(/\s+/g, " ");
 
-  // Handle automatic breath pauses on punctuation per user formula ([,;:] -> ...)
-  result = result.replace(/([,;:])/g, "$1 ... ");
+  // Natural punctuation flow (single space, NO artificial triple dots that cause dead air freezes)
+  result = result.replace(/([,;:])/g, "$1 ");
 
-  // Handle bracket vocal & emotional hints per user formula: [sendu], [serak], [bisik], [napas]
-  result = result.replace(/\[\/?(whispers?|whispering|bisik)\]/gi, " ... ");
-  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, " ... ");
-  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, " ... — ");
-  result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, " ... ");
+  // Handle emotional tags with natural cadences
+  result = result.replace(/\[\/?(whispers?|whispering|bisik)\]/gi, " ");
+  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, " ");
+  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, " — ");
+  result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, " ");
   result = result.replace(/\[.*?\]/g, ""); // strip remaining bracket tags
 
   // Ensure punctuation attaches cleanly
   result = result.replace(/\s+([,.:;?!])/g, "$1");
-  result = result.replace(/\.{3,}/g, " ... ");
+  result = result.replace(/\.{4,}/g, "...");
   result = result.replace(/\s+/g, " ");
   return result.trim();
 }
@@ -110,8 +110,8 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
 
   if (key.includes("athalea")) {
     // Athalea: Sendu & Serak-Serak Basah (1:1 Matched Acoustic Clone from SAMPLE/audio [vocals].mp3)
-    // Formula: Pitch register dada (-14Hz) untuk getaran pita suara vocal fry, tempo pencerita diperlambat (-16%)
-    const rateVal = Math.round(-16 * speedMultiplier);
+    // Formula: Pitch register dada (-14Hz) untuk getaran pita suara vocal fry, tempo pencerita diperlambat (-12%)
+    const rateVal = Math.round(-12 * speedMultiplier);
     return {
       voiceId: "id-ID-GadisNeural",
       rate: `${rateVal}%`,
@@ -132,12 +132,12 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
 
   if (key.includes("serena")) {
     // Serena: Heartfelt Indonesian (Novel & Poetry Narrator)
-    // Formula: Lembut, hangat, penuh penghayatan emosional mendalam (-8Hz, tempo -11%)
-    const rateVal = Math.round(-11 * speedMultiplier);
+    // Formula: 1:1 match terhadap benchmark ElevenLabs F0 ~195Hz (-28Hz, tempo -4%)
+    const rateVal = Math.round(-4 * speedMultiplier);
     return {
       voiceId: "id-ID-GadisNeural",
       rate: `${rateVal}%`,
-      pitch: "-8Hz",
+      pitch: "-28Hz",
     };
   }
 
@@ -284,12 +284,12 @@ export async function synthesizeWithMsEdge(
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
   const config = getVoiceConfig(voiceKey, options?.speed, options?.stability);
   const tts = new MsEdgeTTS();
-  await tts.setMetadata(config.voiceId, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+  // Upgrade to 96 kbps for studio-grade acoustic depth and crisp resonance
+  await tts.setMetadata(config.voiceId, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 
-  // Micro-pause cadence: ensure punctuation breathes naturally
+  // Micro-pause cadence: ensure natural punctuation flow without dead air freezes
   const formattedText = text
-    .replace(/,/g, ", ")
-    .replace(/\.\.\./g, "... ")
+    .replace(/([,;:])/g, "$1 ")
     .replace(/\s+/g, " ")
     .trim();
 
