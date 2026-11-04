@@ -102,7 +102,7 @@ export const authConfig = {
      */
   ],
   pages: {
-    signIn: "/app/sign-in",
+    signIn: "/",
   },
   session: { strategy: "jwt" },
   adapter: PrismaAdapter(db),
