@@ -44,3 +44,12 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# Audio files & samples (strictly kept exclusively in C:\elevenlab feels\SAMPLE)
+*.mp3
+*.wav
+*.ogg
+*.flac
+/public/samples
+/public/*.mp3
+/public/*.wav
