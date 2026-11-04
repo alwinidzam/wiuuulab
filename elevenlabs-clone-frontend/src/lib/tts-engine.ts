@@ -277,15 +277,102 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
   };
 }
 
+// Master acoustic reference profiles for Zero-Shot Hugging Face Voice Cloning
+export const HF_VOICE_REFERENCES: Record<string, { audioUrl: string; refText: string }> = {
+  athalea: {
+    audioUrl: "https://wiuuulab.vercel.app/athalea_ref.mp3",
+    refText: "Mari berkelana tanpa rencana. Biarkan semesta menuntun langkah kita.",
+  },
+  serena: {
+    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/workspace/6d57e0e7bcf24c97ae58ce33b31b1a15/voices/fpsPI3vlnQ0anCTPiHk5/APC5cakUwuYjiKzICXQa.mp3",
+    refText: "Di balik setiap kisah yang indah, selalu ada ketulusan yang tak terucap.",
+  },
+  ongky: {
+    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/workspace/143af1e0a2f8435e8c86be2236e7ad4d/voices/5YVVTVlHuEcIu0JBLbEF/53e42f55-e489-4999-b493-9b70de6617b6.mp3",
+    refText: "Selamat datang kembali bersama saya. Hari ini kita akan membahas strategi yang tenang dan terarah.",
+  },
+  bowo: {
+    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/user/j8Gj4ZyujgaTQhT3NsmEf2mY6ww2/voices/LxiqOV1uxBCgYTeitAHf/FmZ6jgde73tcYTXqvq7U.mp3",
+    refText: "Kalian tidak akan pernah bisa lari dari kegelapan yang menanti.",
+  },
+  adam: {
+    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/workspace/b3709ae8839847b6a804736de5e5651c/voices/bfGb7JTLUnZebZRiFYyq/sQiMNu3kolXvAQGhCb2s.mp3",
+    refText: "In the depth of the night, every whisper carries weight.",
+  },
+};
+
+export async function synthesizeZeroShotHF(
+  text: string,
+  voiceKey: string
+): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string } | null> {
+  const token = process.env.HF_TOKEN;
+  const key = voiceKey.toLowerCase();
+  const ref = HF_VOICE_REFERENCES[key] || HF_VOICE_REFERENCES.serena;
+
+  try {
+    const { Client, handle_file } = await import("@gradio/client");
+    const connectOptions: any = {};
+    if (token) {
+      connectOptions.token = token;
+    }
+    const app = await Client.connect("mrfakename/E2-F5-TTS", connectOptions);
+
+    const result = await app.predict("/predict", {
+      ref_audio: handle_file(ref.audioUrl),
+      ref_text: ref.refText,
+      gen_text: text,
+      remove_silence: false,
+    });
+
+    const audioUrl = (result.data as any)?.[0]?.url;
+    if (audioUrl) {
+      const res = await fetch(audioUrl);
+      if (res.ok) {
+        const arrayBuf = await res.arrayBuffer();
+        const buffer = Buffer.from(arrayBuf);
+        const base64Audio = buffer.toString("base64");
+        const dataUrl = `data:audio/wav;base64,${base64Audio}`;
+        const wordCount = text.split(/\s+/).length;
+        const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
+        const mins = Math.floor(durationSeconds / 60);
+        const secs = durationSeconds % 60;
+        return {
+          buffer,
+          dataUrl,
+          durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
+        };
+      }
+    }
+  } catch (err: any) {
+    console.warn("Hugging Face Zero-Shot F5-TTS unavailable, continuing to resilient multi-neural engine:", err?.message || err);
+  }
+  return null;
+}
+
+async function streamFromVoice(voiceId: string, pitch: string, rate: string, text: string): Promise<Buffer> {
+  const tts = new MsEdgeTTS();
+  await tts.setMetadata(voiceId, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+  const { audioStream } = tts.toStream(text, { pitch, rate });
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    audioStream.on("data", (chunk: Buffer) => chunks.push(chunk));
+    audioStream.on("end", () => {
+      try { tts.close(); } catch (_) {}
+      resolve(Buffer.concat(chunks));
+    });
+    audioStream.on("error", (err: any) => {
+      try { tts.close(); } catch (_) {}
+      reject(err);
+    });
+  });
+}
+
 export async function synthesizeWithMsEdge(
   text: string,
   voiceKey: string,
   options?: { speed?: number; stability?: number }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
   const config = getVoiceConfig(voiceKey, options?.speed, options?.stability);
-  const tts = new MsEdgeTTS();
-  // Upgrade to 96 kbps for studio-grade acoustic depth and crisp resonance
-  await tts.setMetadata(config.voiceId, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 
   // Micro-pause cadence: ensure natural punctuation flow without dead air freezes
   const formattedText = text
@@ -293,38 +380,28 @@ export async function synthesizeWithMsEdge(
     .replace(/\s+/g, " ")
     .trim();
 
-  const { audioStream } = tts.toStream(formattedText, {
-    pitch: config.pitch,
-    rate: config.rate,
-  });
+  let buffer: Buffer;
+  try {
+    buffer = await streamFromVoice(config.voiceId, config.pitch, config.rate, formattedText);
+  } catch (err: any) {
+    console.warn(`Primary voice ${config.voiceId} connection drop (${err.message}). Activating zero-crash fallback...`);
+    const isFemale = config.voiceId.includes("Female") || config.voiceId.includes("Gadis") || config.voiceId.includes("Ava") || config.voiceId.includes("Emma");
+    const fallbackId = isFemale ? "id-ID-GadisNeural" : "id-ID-ArdiNeural";
+    buffer = await streamFromVoice(fallbackId, config.pitch, config.rate, formattedText);
+  }
 
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    audioStream.on("data", (chunk: Buffer) => chunks.push(chunk));
-    audioStream.on("end", () => {
-      try {
-        tts.close();
-      } catch (_) {}
-      const buffer = Buffer.concat(chunks);
-      const base64Audio = buffer.toString("base64");
-      const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
-      const wordCount = formattedText.split(/\s+/).length;
-      const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
-      const mins = Math.floor(durationSeconds / 60);
-      const secs = durationSeconds % 60;
-      resolve({
-        buffer,
-        dataUrl,
-        durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
-      });
-    });
-    audioStream.on("error", (err: any) => {
-      try {
-        tts.close();
-      } catch (_) {}
-      reject(err);
-    });
-  });
+  const base64Audio = buffer.toString("base64");
+  const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
+  const wordCount = formattedText.split(/\s+/).length;
+  const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
+  const mins = Math.floor(durationSeconds / 60);
+  const secs = durationSeconds % 60;
+
+  return {
+    buffer,
+    dataUrl,
+    durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
+  };
 }
 
 export async function synthesizeSpeechDirect(
@@ -372,8 +449,20 @@ export async function synthesizeSpeechDirect(
     }
   }
 
-  // 2. Guaranteed Autonomous Engine: WIULab Human-Feel Neural Engine
-  // 100% Mandiri tanpa ElevenLabs API, bebas kuota, bebas token, zero downtime
+  // 2. High-Fidelity Zero-Shot Voice Cloning via Hugging Face F5-TTS Flow Matching
+  if (process.env.USE_HF_ZEROSHOT === "true") {
+    try {
+      const hfResult = await synthesizeZeroShotHF(processedText, voiceKey);
+      if (hfResult) {
+        return hfResult;
+      }
+    } catch (hfErr) {
+      console.warn("Hugging Face Zero-Shot synthesis fallback:", hfErr);
+    }
+  }
+
+  // 3. Guaranteed Autonomous Engine: WIULab Human-Feel Multi-Neural Engine
+  // 100% Mandiri tanpa ElevenLabs API, bebas kuota, bebas token, zero downtime, multi-neural distinct voices
   try {
     return await synthesizeWithMsEdge(processedText, voiceKey, options);
   } catch (err: any) {
