@@ -84,6 +84,36 @@ const voices: Voice[] = [
     service: "styletts2",
   },
 
+  // Official ElevenLabs Neural Voices (Direct Neural Engine)
+  {
+    id: "adam",
+    name: "Adam (Official ElevenLabs Dominant Narrator 🎙️)",
+    description: "Deep, firm, authoritative narrator — ElevenLabs signature baritone voice",
+    gradientColors: "linear-gradient(45deg, #1e3a8a, #3b82f6, #93c5fd, #172554)",
+    service: "styletts2",
+  },
+  {
+    id: "george",
+    name: "George (Official ElevenLabs Warm Storyteller 🕯️)",
+    description: "Warm, captivating storyteller — cinematic narration, suspense & mystery",
+    gradientColors: "linear-gradient(45deg, #7c2d12, #ea580c, #fed7aa, #431407)",
+    service: "styletts2",
+  },
+  {
+    id: "sarah",
+    name: "Sarah (Official ElevenLabs Reassuring Narrator ✨)",
+    description: "Mature, reassuring, confident female voice for audiobooks & high-tier media",
+    gradientColors: "linear-gradient(45deg, #4c1d95, #8b5cf6, #ddd6fe, #2e1065)",
+    service: "styletts2",
+  },
+  {
+    id: "bella",
+    name: "Bella (Official ElevenLabs Soft & Warm 🌸)",
+    description: "Soft, warm, intimate narration — ideal for reflective stories & romantic drama",
+    gradientColors: "linear-gradient(45deg, #831843, #db2777, #fbcfe8, #500724)",
+    service: "styletts2",
+  },
+
   // English & Cloned Voices
   {
     id: "andreas",

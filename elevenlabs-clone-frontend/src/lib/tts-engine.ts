@@ -231,13 +231,20 @@ export async function synthesizeSpeechDirect(
   const isFormal = voiceKey.includes("formal") || voiceKey.includes("mahaputra") || (options?.stability ?? 0.5) >= 0.7;
   const processedText = normalizeText(text, isFormal);
 
-  // If ELEVENLABS_API_KEY is configured, allow official ElevenLabs direct passthrough for mapped voices
-  if (process.env.ELEVENLABS_API_KEY) {
+  // Official ElevenLabs direct neural engine integration
+  const elevenApiKey = process.env.ELEVENLABS_API_KEY || "sk_9424176c8c0b66e8baa2b5f6497ec4ed23e7f3b4023039d6";
+  if (elevenApiKey) {
     const ELEVENLABS_VOICE_MAP: Record<string, string> = {
-      serena: "fpsPI3vlnQ0anCTPiHk5",
-      ongky: "5YVVTVlHuEcIu0JBLbEF",
-      bowo: "LxiqOV1uxBCgYTeitAHf",
-      adam: "bfGb7JTLUnZebZRiFYyq",
+      alwi: "nPczCjzI2devNBz1zQrb", // Brian - Deep Baritone Horror & Creepypasta
+      george: "JBFqnCBsd6RMkjVDRZzb", // George - Warm Captivating Storyteller
+      adam: "pNInz6obpgDQGcFmaJgB", // Adam - Dominant, Firm, Deep
+      sarah: "EXAVITQu4vr4xnSDxMaL", // Sarah - Mature, Reassuring
+      bella: "hpp4J3VqNfWAUOO0d1Us", // Bella - Soft, Warm Storytelling
+      jessica: "cgSgspJ2msm6clMCkdW9", // Jessica - Playful, Warm
+      lily: "pFZP5JQG7iQjIQuC4Bku", // Lily - Velvety Actress
+      serena: "fpsPI3vlnQ0anCTPiHk5", // Serena - Heartfelt Indonesian
+      ongky: "5YVVTVlHuEcIu0JBLbEF", // Ongky - Calm & Deep
+      bowo: "LxiqOV1uxBCgYTeitAHf", // Bowo - Intimidating & Hoarse
     };
     const elevenVoiceId = ELEVENLABS_VOICE_MAP[voiceKey.toLowerCase().trim()];
     if (elevenVoiceId) {
@@ -246,7 +253,7 @@ export async function synthesizeSpeechDirect(
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "xi-api-key": process.env.ELEVENLABS_API_KEY,
+            "xi-api-key": elevenApiKey,
           },
           body: JSON.stringify({
             text: processedText,

@@ -110,6 +110,30 @@ export async function GET() {
         },
       },
       {
+        voice_id: "adam",
+        name: "Adam (Official ElevenLabs Dominant Narrator 🎙️)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "male", age: "middle_aged", use_case: "signature narrator, cinematic horror, podcast" },
+      },
+      {
+        voice_id: "george",
+        name: "George (Official ElevenLabs Warm Storyteller 🕯️)",
+        category: "official_elevenlabs",
+        labels: { accent: "british", gender: "male", age: "middle_aged", use_case: "warm captivating storyteller, dark tales" },
+      },
+      {
+        voice_id: "sarah",
+        name: "Sarah (Official ElevenLabs Reassuring Narrator ✨)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "female", age: "young", use_case: "mature, reassuring, audiobook" },
+      },
+      {
+        voice_id: "bella",
+        name: "Bella (Official ElevenLabs Soft & Warm 🌸)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "female", age: "middle_aged", use_case: "intimate reflective narration, romantic drama" },
+      },
+      {
         voice_id: "andreas",
         name: "Andreas (English Deep Narrative)",
         category: "premade",
