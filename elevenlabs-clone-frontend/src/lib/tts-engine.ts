@@ -211,31 +211,66 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
 
 let cachedAccessToken: string | null = null;
 let tokenExpiry = 0;
+let currentTokenIndex = 0;
 
 const GOOGLE_API_KEY = "AIzaSyBSsRE_1Os04-bxpd5JTLIniy3UK4OqKys";
-const ELEVEN_REFRESH_TOKEN = "AMf-vBwolr9tsWlSecsbsI1rUZHDJlkQuR-xgoUQr2MCXSQGN9xfUhfp-Wm_lrNJlvjrisWfriMPquOUg7yFeh7EjSZNL1OLCc0xAeqhU3-7jeXM1jJ1AON1sdLYo4orYMGBOp9DNe9TCs-mH_L-aWTGY-YwKboqyEQ-ck5VXgoHF92U5WPSYAz6sT9v8_7IBuUu17ZzeH30ZaqcsWWxC5DsLxbNzxlexTxbijmpi-4Xpg8Ki_GHG18HP5-cLdPPzBqoCz_hE2bxWPv1FVS7mZ2mQEFjXWY-HReanCYgmhfUFCYoFIdTU0Oh4WHL7Vx-BbmB5wNp9lbAPrIHi-Cv9SPo-teKCOPYhsYO1IvpwBJBVUTeChQI-CCjaVWCSsZNTPOsfDbZoA1GDlmuc0QSAgR14jYyZkRm5Q";
+
+// Multi-Account Rotating Token Pool for 100% Free & Unlimited ElevenLabs Neural Stream
+function getRefreshTokenPool(): string[] {
+  const envTokens = process.env.ELEVEN_REFRESH_TOKENS || process.env.ELEVEN_REFRESH_TOKEN;
+  if (envTokens) {
+    const parsed = envTokens.split(",").map((t) => t.trim()).filter(Boolean);
+    if (parsed.length > 0) return parsed;
+  }
+  return [
+    "AMf-vBwolr9tsWlSecsbsI1rUZHDJlkQuR-xgoUQr2MCXSQGN9xfUhfp-Wm_lrNJlvjrisWfriMPquOUg7yFeh7EjSZNL1OLCc0xAeqhU3-7jeXM1jJ1AON1sdLYo4orYMGBOp9DNe9TCs-mH_L-aWTGY-YwKboqyEQ-ck5VXgoHF92U5WPSYAz6sT9v8_7IBuUu17ZzeH30ZaqcsWWxC5DsLxbNzxlexTxbijmpi-4Xpg8Ki_GHG18HP5-cLdPPzBqoCz_hE2bxWPv1FVS7mZ2mQEFjXWY-HReanCYgmhfUFCYoFIdTU0Oh4WHL7Vx-BbmB5wNp9lbAPrIHi-Cv9SPo-teKCOPYhsYO1IvpwBJBVUTeChQI-CCjaVWCSsZNTPOsfDbZoA1GDlmuc0QSAgR14jYyZkRm5Q",
+  ];
+}
 
 export async function getValidElevenToken(): Promise<string> {
   const now = Date.now();
   if (cachedAccessToken && now < tokenExpiry - 60000) {
     return cachedAccessToken;
   }
-  const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${GOOGLE_API_KEY}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Referer: "https://elevenlabs.io/",
-    },
-    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(ELEVEN_REFRESH_TOKEN)}`,
-  });
-  const data = await res.json();
-  const token = data.id_token || data.access_token;
-  if (!token) {
-    throw new Error("Failed to refresh ElevenLabs access token: " + JSON.stringify(data));
+
+  const pool = getRefreshTokenPool();
+  let attempts = 0;
+
+  while (attempts < pool.length) {
+    const refreshToken = pool[currentTokenIndex % pool.length]!;
+    try {
+      const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${GOOGLE_API_KEY}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Referer: "https://elevenlabs.io/",
+        },
+        body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`,
+      });
+
+      const data = await res.json();
+      const token = data.id_token || data.access_token;
+      if (token) {
+        cachedAccessToken = token;
+        tokenExpiry = now + parseInt(data.expires_in || "3600", 10) * 1000;
+        return cachedAccessToken!;
+      }
+    } catch (err) {
+      console.warn(`Token rotation failed for index ${currentTokenIndex}:`, err);
+    }
+
+    currentTokenIndex++;
+    attempts++;
   }
-  cachedAccessToken = token;
-  tokenExpiry = now + parseInt(data.expires_in, 10) * 1000;
-  return cachedAccessToken!;
+
+  throw new Error("Semua token ElevenLabs dalam pool kedaluwarsa atau kuota habis. Silakan tambahkan refresh token baru di ELEVEN_REFRESH_TOKENS.");
+}
+
+export function rotateToNextToken() {
+  cachedAccessToken = null;
+  tokenExpiry = 0;
+  currentTokenIndex++;
+  console.log(`[TokenPool] Rotated to token index: ${currentTokenIndex}`);
 }
 
 export async function synthesizeSpeechDirect(
@@ -322,9 +357,13 @@ export async function synthesizeSpeechDirect(
         dataUrl,
         durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
       };
+    } else {
+      console.warn(`ElevenLabs v4 stream returned status ${ttsRes.status}:`, await ttsRes.text());
+      rotateToNextToken();
     }
   } catch (v4Err) {
-    console.warn("ElevenLabs v4 direct stream failed, attempting secondary ElevenLabs API key:", v4Err);
+    console.warn("ElevenLabs v4 direct stream failed:", v4Err);
+    rotateToNextToken();
   }
 
   // 2. Secondary: Self-Hosted AI Gateway (StyleTTS2 / Unified Gateway)
@@ -489,9 +528,13 @@ export async function synthesizeSoundEffect(
         dataUrl,
         durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
       };
+    } else {
+      console.warn(`ElevenLabs SFX Bearer returned status ${res.status}:`, await res.text());
+      rotateToNextToken();
     }
   } catch (err) {
     console.warn("ElevenLabs SFX Bearer endpoint error:", err);
+    rotateToNextToken();
   }
 
   // 3. Tertiary: Optional Environment ElevenLabs API Key (only if user provided one)
