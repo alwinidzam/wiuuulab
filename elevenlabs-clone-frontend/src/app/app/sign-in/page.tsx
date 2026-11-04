@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -18,12 +19,11 @@ export default function SignInPage() {
     handleSubmit,
     formState: { errors },
     watch,
-    setValue,
   } = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "admin@wiuuulab.ai",
-      password: "wiuuulab_admin_2026!",
+      email: "",
+      password: "",
     },
     mode: "onChange",
   });
@@ -35,18 +35,10 @@ export default function SignInPage() {
     setIsFormValid(!!email && !!password);
   }, [email, password]);
 
-  const handleQuickAdminLogin = async () => {
-    setValue("email", "admin@wiuuulab.ai", { shouldValidate: true });
-    setValue("password", "wiuuulab_admin_2026!", { shouldValidate: true });
-    await onSubmit({
-      email: "admin@wiuuulab.ai",
-      password: "wiuuulab_admin_2026!",
-    });
-  };
-
   const onSubmit = async (data: SignInFormValues) => {
     try {
       setIsLoading(true);
+      setError(null);
 
       const signInResult = await signIn("credentials", {
         redirect: false,
@@ -59,163 +51,171 @@ export default function SignInPage() {
       } else {
         setError(
           signInResult.error === "CredentialsSignin"
-            ? "Invalid email or password"
-            : "Something went wrong",
+            ? "Email atau kata sandi tidak cocok. Silakan periksa kembali."
+            : "Terjadi kesalahan saat masuk. Silakan coba lagi.",
         );
       }
-    } catch (error) {
-      setError("Something went wrong");
+    } catch (err: any) {
+      setError("Terjadi kesalahan sistem. Silakan coba beberapa saat lagi.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen w-full">
-      <div className="relative w-full lg:w-1/2">
-        <div className="absolute left-8 top-6">
-          <span className="text-xl font-bold tracking-tight text-black">
-            wiuuulab
-          </span>
+    <div className="flex min-h-screen w-full bg-white text-gray-900 font-sans">
+      <div className="relative w-full lg:w-1/2 flex flex-col justify-between p-8 sm:p-12">
+        <div>
+          <Link href="/" className="inline-flex items-center gap-2">
+            <span className="text-2xl font-black tracking-tight text-gray-950">
+              wiuuulab
+            </span>
+            <span className="h-2 w-2 rounded-full bg-purple-600"></span>
+          </Link>
         </div>
 
-        {/* Centered sign up form */}
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="w-full max-w-md p-8">
-            <h2 className="mb-6 text-center text-2xl font-semibold">
-              Log in to your account
-            </h2>
+        {/* Centered sign in form */}
+        <div className="w-full max-w-md mx-auto my-auto py-8">
+          <div className="mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-950">
+              Masuk ke Akun Studio
+            </h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Gunakan email dan kata sandi Anda yang terdaftar untuk mengakses studio suara wiuuulab.
+            </p>
+          </div>
 
-            {error && (
-              <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-500">
-                {error}
-              </div>
-            )}
+          {error && (
+            <div className="mb-5 rounded-xl border border-red-200 bg-red-50/80 p-3.5 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
-            <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Akun Admin Bawaan</p>
-                  <p className="text-sm font-semibold text-gray-900">admin@wiuuulab.ai</p>
-                  <p className="font-mono text-xs text-gray-500">wiuuulab_admin_2026!</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleQuickAdminLogin}
-                  disabled={isLoading}
-                  className="rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white shadow transition-all hover:bg-gray-800 disabled:opacity-50"
-                >
-                  ⚡ Masuk Cepat
-                </button>
-              </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-xs font-semibold text-gray-700 uppercase tracking-wider"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                {...register("email")}
+                placeholder="nama@email.com"
+                required
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-purple-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-600/20 transition-all"
+              />
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="mb-1 block text-sm font-medium text-black"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  {...register("email")}
-                  placeholder="Enter your email address"
-                  required
-                  className="w-full rounded-lg border border-gray-200 p-2 placeholder:text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-4">
-                <label
-                  htmlFor="password"
-                  className="mb-1 block text-sm font-medium text-black"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  {...register("password")}
-                  placeholder="Enter your password"
-                  required
-                  className="w-full rounded-lg border border-gray-200 p-2 placeholder:text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-                />
-                {errors.password && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading || !isFormValid}
-                className={`my-4 w-full rounded-full py-2.5 text-sm text-white transition-colors ${isLoading ? "cursor-not-allowed bg-gray-400" : isFormValid ? "bg-black" : "cursor-not-allowed bg-gray-400"}`}
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-xs font-semibold text-gray-700 uppercase tracking-wider"
               >
-                {isLoading ? (
-                  <span className="flex items-center justify-center">
-                    <svg
-                      className="mr-2 h-4 w-4 animate-spin text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Signing in...
-                  </span>
-                ) : (
-                  "Sign in"
-                )}
-              </button>
-            </form>
-          </div>
+                Kata Sandi
+              </label>
+              <input
+                id="password"
+                type="password"
+                {...register("password")}
+                placeholder="Masukkan kata sandi Anda"
+                required
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-purple-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-600/20 transition-all"
+              />
+              {errors.password && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || !isFormValid}
+              className={`w-full mt-6 rounded-xl py-3 text-sm font-bold text-white transition-all shadow-md ${
+                isLoading || !isFormValid
+                  ? "bg-gray-300 cursor-not-allowed shadow-none"
+                  : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-500/25 hover:shadow-lg"
+              }`}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg
+                    className="h-4 w-4 animate-spin text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>Memverifikasi...</span>
+                </span>
+              ) : (
+                "Masuk ke Studio"
+              )}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-xs text-gray-500">
+            Belum memiliki akun?{" "}
+            <Link
+              href="/app/sign-up"
+              className="font-semibold text-purple-600 hover:text-purple-700 underline underline-offset-2"
+            >
+              Daftar gratis di sini
+            </Link>
+          </p>
+        </div>
+
+        <div className="text-xs text-gray-400">
+          © 2026 wiuuulab Studio. Hak cipta dilindungi undang-undang.
         </div>
       </div>
 
-      {/* Right side */}
-      <div className="hidden py-[3vh] pr-[3vh] lg:block lg:w-1/2">
-        <div className="hidden h-full rounded-3xl bg-gradient-to-b from-indigo-100 via-purple-100 to-[#5960d7] lg:block">
-          <div className="flex h-full flex-col p-12">
-            <div className="flex h-full items-center justify-center">
-              <img
-                className="w-full rounded-lg"
-                alt="Dashboard preview"
-                src="/placeholder.png"
-              />
-            </div>
+      {/* Right side banner with clean subtle gradient */}
+      <div className="hidden lg:block lg:w-1/2 p-4">
+        <div className="h-full w-full rounded-3xl bg-gradient-to-br from-purple-50 via-indigo-50/50 to-pink-50 border border-purple-100 flex flex-col justify-between p-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-purple-200/40 via-indigo-200/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
 
-            <div className="h-fit w-full max-w-lg">
-              <div className="mb-3 flex w-fit rounded-2xl bg-indigo-100 bg-opacity-40 px-3 py-1">
-                <span className="text-xs font-medium uppercase tracking-wider text-white">
-                  Latest updates
-                </span>
-              </div>
-              <h3 className="text-lg text-white xl:text-xl 2xl:text-2xl 2xl:leading-10">
-                Use the text-to-speech editor to create voiceovers in multiple
-                voices using AI.
-              </h3>
-            </div>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-purple-200 text-xs font-semibold text-purple-900 w-fit shadow-sm">
+            ⚡ Khusus Pengguna Terdaftar
+          </div>
+
+          <div className="space-y-4 max-w-lg z-10">
+            <h2 className="text-3xl font-extrabold text-gray-900 leading-tight">
+              Kreativitas Audio Tanpa Batas di Studio wiuuulab
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Masuk untuk membuat sulih suara natural dengan vokal Athalea, Serena, Alwi, mengatur parameter stabilitas intonasi, hingga menghasilkan sound effects foley sinematik.
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-white/90 border border-purple-100 p-5 shadow-sm z-10 max-w-md">
+            <p className="text-xs font-bold uppercase tracking-wider text-purple-900 mb-1">
+              Keamanan Akun Terjaga
+            </p>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Setiap proyek dan history kreasi suara tersimpan aman dan terisolasi khusus di dalam profil akun Anda.
+            </p>
           </div>
         </div>
       </div>

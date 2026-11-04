@@ -13,7 +13,7 @@ export async function signUp(data: SignUpFormValues) {
     });
 
     if (existingUser) {
-      return { error: "Email already in use" };
+      return { error: "Email sudah terdaftar. Silakan gunakan email lain atau masuk." };
     }
 
     const hashedPassword = await bcrypt.hash(validatedData.password, 10);
@@ -22,10 +22,11 @@ export async function signUp(data: SignUpFormValues) {
       data: {
         email: validatedData.email,
         password: hashedPassword,
+        credits: 1000000,
       },
     });
 
-    return { success: "Account created successfully" };
+    return { success: "Akun berhasil dibuat! Silakan masuk." };
   } catch (error: any) {
     if (
       error?.name === "ZodError" &&
@@ -35,6 +36,6 @@ export async function signUp(data: SignUpFormValues) {
       return { error: error.errors[0].message };
     }
 
-    return { error: "Something went wrong. Please try again." };
+    return { error: "Terjadi kesalahan saat mendaftar. Silakan coba lagi." };
   }
 }
