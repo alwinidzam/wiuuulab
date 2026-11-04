@@ -51,9 +51,19 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
       onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
       <div className="flex items-center justify-between">
-        <h1 className={`text-xl font-bold tracking-tight text-black ${!isExpanded && "hidden"}`}>
-          wiuuulab
-        </h1>
+        {isExpanded ? (
+          <img
+            src="/logo-banner.png"
+            alt="WIULab"
+            className="h-8 w-auto object-contain max-w-[170px]"
+          />
+        ) : (
+          <img
+            src="/logo-icon.png"
+            alt="WIULab"
+            className="h-7 w-7 object-contain mx-auto"
+          />
+        )}
         {!isMobile && (
           <button
             onClick={() => setIsPinned(!isPinned)}

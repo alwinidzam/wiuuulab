@@ -73,15 +73,11 @@ export default function LoginPage() {
       {/* Left Column: Clean Login Form */}
       <div className="relative w-full lg:w-1/2 flex flex-col justify-between p-8 sm:p-12 md:p-16">
         <div>
-          <div className="inline-flex items-center gap-2">
-            <span className="text-2xl font-black tracking-tight text-gray-950 flex items-center gap-1.5">
-              wiuuulab
-              <span className="h-2 w-2 rounded-full bg-purple-600"></span>
-            </span>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/60">
-              Private Studio
-            </span>
-          </div>
+          <img
+            src="/logo-banner.png"
+            alt="WIULab Logo"
+            className="h-10 sm:h-12 w-auto object-contain"
+          />
         </div>
 
         {/* Form Container */}
