@@ -392,17 +392,21 @@ export async function synthesizeSoundEffect(
   options?: {
     duration_seconds?: number;
     prompt_influence?: number;
+    loop?: boolean;
+    model_id?: "eleven_text_to_sound_v3" | "eleven_text_to_sound_v2";
   }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
   const safePrompt = prompt.trim();
   const duration = options?.duration_seconds ?? Math.min(10, Math.max(3, Math.round(safePrompt.length / 12)));
   const promptInfluence = options?.prompt_influence ?? 0.3;
+  const loop = options?.loop ?? false;
+  const modelId = options?.model_id ?? "eleven_text_to_sound_v3";
 
   // 1. Primary: Official ElevenLabs API Key
   const elevenApiKey = process.env.ELEVENLABS_API_KEY || "sk_9424176c8c0b66e8baa2b5f6497ec4ed23e7f3b4023039d6";
   if (elevenApiKey) {
     try {
-      const res = await fetch("https://api.elevenlabs.io/v1/sound-generation", {
+      const res = await fetch("https://api.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -412,6 +416,8 @@ export async function synthesizeSoundEffect(
           text: safePrompt,
           duration_seconds: duration,
           prompt_influence: promptInfluence,
+          loop: loop,
+          model_id: modelId,
         }),
       });
 
@@ -437,7 +443,7 @@ export async function synthesizeSoundEffect(
   // 2. Secondary: Bearer Token via ElevenLabs US endpoint
   try {
     const token = await getValidElevenToken();
-    const res = await fetch("https://api.us.elevenlabs.io/v1/sound-generation", {
+    const res = await fetch("https://api.us.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -449,6 +455,8 @@ export async function synthesizeSoundEffect(
         text: safePrompt,
         duration_seconds: duration,
         prompt_influence: promptInfluence,
+        loop: loop,
+        model_id: modelId,
       }),
     });
 

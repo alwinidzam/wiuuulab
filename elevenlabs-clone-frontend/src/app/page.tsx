@@ -9,8 +9,10 @@ import {
   IoArrowForward,
   IoDownloadOutline,
   IoKeyOutline,
-  IoCheckmarkCircle,
   IoVolumeHighOutline,
+  IoMicOutline,
+  IoMusicalNotesOutline,
+  IoTimeOutline,
 } from "react-icons/io5";
 
 const VOICES = [
@@ -87,9 +89,51 @@ const PRESETS = [
   },
 ];
 
+const SFX_PRESETS = [
+  {
+    label: "⛈️ Hujan Badai Petir",
+    prompt: "heavy thunderstorm rain and loud lightning crash",
+    duration: 4,
+  },
+  {
+    label: "🏎️ Deru Mobil Sport",
+    prompt: "high performance sports car engine revving and accelerating down street",
+    duration: 3,
+  },
+  {
+    label: "🔫 Sci-Fi Blaster",
+    prompt: "futuristic laser gun blaster fire with energetic plasma pulse",
+    duration: 2,
+  },
+  {
+    label: "🚁 Helikopter Rendah",
+    prompt: "military helicopter rotor blades flying low overhead",
+    duration: 4,
+  },
+  {
+    label: "🛸 UFO Drone",
+    prompt: "deep cinematic alien spaceship drone and eerie synthesizer hum",
+    duration: 4,
+  },
+  {
+    label: "🐾 Langkah di Kayu",
+    prompt: "slow footsteps creaking on old wooden floor in empty house",
+    duration: 3,
+  },
+];
+
 export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<"tts" | "sfx">("tts");
+
+  // TTS State
   const [selectedVoice, setSelectedVoice] = useState("athalea");
   const [text, setText] = useState(VOICES[0]!.sampleText);
+
+  // SFX State
+  const [sfxPrompt, setSfxPrompt] = useState("heavy thunderstorm rain and loud lightning crash");
+  const [sfxDuration, setSfxDuration] = useState(4);
+
+  // Playback & Global State
   const [loading, setLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -106,7 +150,7 @@ export default function HomePage() {
     }
   };
 
-  const handleGenerate = async () => {
+  const handleGenerateTTS = async () => {
     if (!text.trim()) return;
     setError(null);
     setLoading(true);
@@ -133,6 +177,41 @@ export default function HomePage() {
       }
     } catch (err: any) {
       setError(err?.message || "Gagal generate audio");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerateSFX = async () => {
+    if (!sfxPrompt.trim()) return;
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/preview-sfx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: sfxPrompt,
+          duration_seconds: sfxDuration,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.audioUrl) {
+        throw new Error(data.error || "Gagal menghasilkan sound effect");
+      }
+
+      setAudioUrl(data.audioUrl);
+      setDuration(data.duration);
+      setIsPlaying(true);
+
+      if (audioRef.current) {
+        audioRef.current.src = data.audioUrl;
+        audioRef.current.play();
+      }
+    } catch (err: any) {
+      setError(err?.message || "Gagal generate sound effect");
     } finally {
       setLoading(false);
     }
@@ -197,102 +276,214 @@ export default function HomePage() {
         {/* Hero Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gray-900 border border-gray-800 text-xs text-gray-300 mb-6 shadow-inner">
           <IoSparkles className="text-purple-400" />
-          <span className="font-semibold text-white">100% Free & Unlimited Generative Speech</span>
+          <span className="font-semibold text-white">100% Free & Unlimited Audio Generation</span>
           <span className="text-gray-500">•</span>
           <span className="text-purple-300 font-medium">Bebas Microsoft Edge TTS</span>
         </div>
 
         {/* Hero Title */}
         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-center tracking-tight max-w-4xl leading-[1.15]">
-          Suara AI Paling Hidup, Lembut &{" "}
+          Suara AI & Sound Effect Paling Hidup,{" "}
           <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-300 bg-clip-text text-transparent">
             Penuh Penghayatan
           </span>
         </h1>
 
         <p className="mt-4 text-center text-gray-400 max-w-2xl text-sm sm:text-base leading-relaxed">
-          Rasakan kedalaman karakter suara <strong>Athalea (1:1 Clone)</strong>, <strong>Serena (Heartfelt)</strong>, <strong>Alwi (Horror Bariton)</strong>, dan katalog suara global ElevenLabs v4 secara langsung tanpa login.
+          Rasakan kedalaman karakter suara <strong>Athalea (1:1 Clone)</strong>, <strong>Serena (Heartfelt)</strong>, <strong>Alwi (Horror Bariton)</strong>, serta <strong>ElevenLabs Neural Sound Effects</strong> secara langsung tanpa login.
         </p>
 
+        {/* Tab Switcher: TTS vs SFX */}
+        <div className="mt-8 flex items-center p-1 rounded-xl bg-gray-900 border border-gray-800 shadow-inner">
+          <button
+            onClick={() => setActiveTab("tts")}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              activeTab === "tts"
+                ? "bg-purple-600 text-white shadow-md"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <IoMicOutline className="text-base" />
+            <span>Suara Karakter (Text to Speech)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("sfx")}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              activeTab === "sfx"
+                ? "bg-purple-600 text-white shadow-md"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <IoMusicalNotesOutline className="text-base" />
+            <span>Efek Suara AI (Sound Effects)</span>
+          </button>
+        </div>
+
         {/* Interactive Speech Synthesis Playground */}
-        <div className="mt-10 w-full max-w-3xl rounded-2xl border border-gray-800 bg-[#14171d] shadow-2xl p-5 sm:p-7 relative overflow-hidden">
+        <div className="mt-6 w-full max-w-3xl rounded-2xl border border-gray-800 bg-[#14171d] shadow-2xl p-5 sm:p-7 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500"></div>
 
-          {/* Voice Selector Pills */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">
-              Pilih Karakter Suara:
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {VOICES.map((v) => {
-                const isSelected = selectedVoice === v.id;
-                return (
+          {activeTab === "tts" ? (
+            /* TAB 1: TEXT TO SPEECH */
+            <>
+              {/* Voice Selector Pills */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">
+                  Pilih Karakter Suara:
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {VOICES.map((v) => {
+                    const isSelected = selectedVoice === v.id;
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => handleVoiceSelect(v.id)}
+                        className={`flex flex-col text-left p-3 rounded-xl border transition-all ${
+                          isSelected
+                            ? "border-purple-500 bg-purple-950/30 shadow-md ring-1 ring-purple-500"
+                            : "border-gray-800/80 bg-gray-900/40 hover:bg-gray-800/60 hover:border-gray-700"
+                        }`}
+                      >
+                        <span className="font-bold text-sm text-white flex items-center justify-between">
+                          {v.name}
+                          {isSelected && (
+                            <span className="h-2 w-2 rounded-full bg-purple-400"></span>
+                          )}
+                        </span>
+                        <span className="text-[11px] text-gray-400 mt-1 line-clamp-1">{v.accent}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quick Preset Pills */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-gray-500 font-medium">Contoh Teks:</span>
+                {PRESETS.map((p, idx) => (
                   <button
-                    key={v.id}
-                    onClick={() => handleVoiceSelect(v.id)}
-                    className={`flex flex-col text-left p-3 rounded-xl border transition-all ${
-                      isSelected
-                        ? "border-purple-500 bg-purple-950/30 shadow-md ring-1 ring-purple-500"
-                        : "border-gray-800/80 bg-gray-900/40 hover:bg-gray-800/60 hover:border-gray-700"
-                    }`}
+                    key={idx}
+                    onClick={() => {
+                      setText(p.text);
+                      setSelectedVoice(p.voice);
+                    }}
+                    className="text-xs rounded-full bg-gray-800/60 hover:bg-gray-700 px-3 py-1 text-gray-300 transition-colors"
                   >
-                    <span className="font-bold text-sm text-white flex items-center justify-between">
-                      {v.name}
-                      {isSelected && (
-                        <span className="h-2 w-2 rounded-full bg-purple-400"></span>
-                      )}
-                    </span>
-                    <span className="text-[11px] text-gray-400 mt-1 line-clamp-1">{v.accent}</span>
+                    {p.label}
                   </button>
-                );
-              })}
-            </div>
-          </div>
+                ))}
+              </div>
 
-          {/* Quick Preset Pills */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-gray-500 font-medium">Contoh Teks:</span>
-            {PRESETS.map((p, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setText(p.text);
-                  setSelectedVoice(p.voice);
-                }}
-                className="text-xs rounded-full bg-gray-800/60 hover:bg-gray-700 px-3 py-1 text-gray-300 transition-colors"
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+              {/* Text Area Input */}
+              <div className="mt-4">
+                <textarea
+                  rows={3}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Tulis kalimat apapun di sini untuk diubah menjadi suara..."
+                  className="w-full rounded-xl border border-gray-800 bg-[#0d0f12] p-4 text-sm text-gray-100 placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none transition-all"
+                />
+              </div>
+            </>
+          ) : (
+            /* TAB 2: SOUND EFFECTS GENERATION */
+            <>
+              {/* SFX Presets */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">
+                  Preset Efek Suara Foley:
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {SFX_PRESETS.map((s, idx) => {
+                    const isSelected = sfxPrompt === s.prompt;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setSfxPrompt(s.prompt);
+                          setSfxDuration(s.duration);
+                        }}
+                        className={`flex flex-col text-left p-3 rounded-xl border transition-all ${
+                          isSelected
+                            ? "border-purple-500 bg-purple-950/30 shadow-md ring-1 ring-purple-500"
+                            : "border-gray-800/80 bg-gray-900/40 hover:bg-gray-800/60 hover:border-gray-700"
+                        }`}
+                      >
+                        <span className="font-bold text-xs sm:text-sm text-white flex items-center justify-between">
+                          {s.label}
+                          {isSelected && (
+                            <span className="h-2 w-2 rounded-full bg-purple-400"></span>
+                          )}
+                        </span>
+                        <span className="text-[11px] text-gray-400 mt-1">{s.duration} detik</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-          {/* Text Area Input */}
-          <div className="mt-4">
-            <textarea
-              rows={3}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Tulis kalimat apapun di sini untuk diubah menjadi suara..."
-              className="w-full rounded-xl border border-gray-800 bg-[#0d0f12] p-4 text-sm text-gray-100 placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none transition-all"
-            />
-          </div>
+              {/* SFX Prompt Input */}
+              <div className="mt-4">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
+                  Deskripsi Suara (Prompt):
+                </label>
+                <textarea
+                  rows={2}
+                  value={sfxPrompt}
+                  onChange={(e) => setSfxPrompt(e.target.value)}
+                  placeholder="Contoh: heavy thunderstorm rain and loud lightning crash, atau futuristic sci-fi laser blaster..."
+                  className="w-full rounded-xl border border-gray-800 bg-[#0d0f12] p-4 text-sm text-gray-100 placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none transition-all"
+                />
+              </div>
+
+              {/* Duration selector */}
+              <div className="mt-3 flex items-center gap-3">
+                <span className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                  <IoTimeOutline /> Durasi Efek:
+                </span>
+                <div className="flex items-center gap-2">
+                  {[2, 3, 4, 6, 8].map((sec) => (
+                    <button
+                      key={sec}
+                      onClick={() => setSfxDuration(sec)}
+                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                        sfxDuration === sec
+                          ? "border-purple-500 bg-purple-900/40 text-purple-200 font-bold"
+                          : "border-gray-800 bg-gray-900/40 text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      {sec}s
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Error Message */}
           {error && (
-            <div className="mt-2 text-xs text-red-400 bg-red-950/30 border border-red-900/50 rounded-lg p-2.5">
+            <div className="mt-3 text-xs text-red-400 bg-red-950/30 border border-red-900/50 rounded-lg p-2.5">
               {error}
             </div>
           )}
 
           {/* Action Row: Generate & Audio Player */}
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-800/60">
+          <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-gray-800/60">
             <div className="flex items-center space-x-2 text-xs text-gray-400">
               <IoVolumeHighOutline className="text-base text-purple-400" />
               <span>
-                Suara aktif:{" "}
-                <strong className="text-white">
-                  {VOICES.find((v) => v.id === selectedVoice)?.name}
-                </strong>
+                {activeTab === "tts" ? (
+                  <>
+                    Suara:{" "}
+                    <strong className="text-white">
+                      {VOICES.find((v) => v.id === selectedVoice)?.name}
+                    </strong>
+                  </>
+                ) : (
+                  <>
+                    Efek: <strong className="text-white">{sfxDuration} detik</strong> (Foley AI)
+                  </>
+                )}
               </span>
             </div>
 
@@ -306,10 +497,10 @@ export default function HomePage() {
                   >
                     {isPlaying ? <IoPause /> : <IoPlay className="ml-0.5" />}
                   </button>
-                  <span className="font-mono">{duration || "0:05"}</span>
+                  <span className="font-mono">{duration || "0:04"}</span>
                   <a
                     href={audioUrl}
-                    download={`wiuuulab_${selectedVoice}.mp3`}
+                    download={activeTab === "tts" ? `wiuuulab_${selectedVoice}.mp3` : `wiuuulab_sfx.mp3`}
                     className="text-gray-400 hover:text-white ml-1"
                     title="Download MP3"
                   >
@@ -319,8 +510,8 @@ export default function HomePage() {
               )}
 
               <button
-                onClick={handleGenerate}
-                disabled={loading || !text.trim()}
+                onClick={activeTab === "tts" ? handleGenerateTTS : handleGenerateSFX}
+                disabled={loading || (activeTab === "tts" ? !text.trim() : !sfxPrompt.trim())}
                 className="w-full sm:w-auto rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-6 py-2.5 text-sm font-bold shadow-lg shadow-purple-900/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
@@ -345,12 +536,14 @@ export default function HomePage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    <span>Generating Neural Audio...</span>
+                    <span>Generating Audio...</span>
                   </>
                 ) : (
                   <>
                     <IoPlay className="text-sm" />
-                    <span>Generate & Putar Suara</span>
+                    <span>
+                      {activeTab === "tts" ? "Generate & Putar Suara" : "Generate Efek Suara"}
+                    </span>
                   </>
                 )}
               </button>
