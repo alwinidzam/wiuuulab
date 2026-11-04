@@ -86,19 +86,24 @@ export function normalizeText(text: string, isFormal = false): string {
     result = result.replace(regex, replacement);
   }
 
+  // Clean multi-spaces & normalize ellipsis
+  result = result.replace(/\s+/g, " ");
+  result = result.replace(/\.{3,}/g, " … ");
+
   // Natural comma, semicolon, and colon breath micro-pauses
-  result = result.replace(/([,;:])\s+/g, "$1 ... ");
+  result = result.replace(/([,;:])\s*(?!\.\.\.)/g, "$1 … ");
 
   // Handle ElevenLabs latent prompt tags -> convert to acoustic pauses & expressive breathing
-  result = result.replace(/\[(whispers?|whispering|bisik)\]/gi, " ... ");
+  result = result.replace(/\[(whispers?|whispering|bisik)\]/gi, " … ");
   result = result.replace(/\[\/(whispers?|whispering|bisik)\]/gi, "");
-  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, " ... — ");
-  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, " ... — ");
-  result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, " ... ");
+  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, " … — ");
+  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, " … — ");
+  result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, " … ");
   result = result.replace(/\[.*?\]/g, ""); // strip remaining bracket tags
 
-  // Pacing pauses for storytelling (commas and periods get natural breathing rhythm)
-  result = result.replace(/\.{3,}/g, "... — ");
+  // Sentence boundary natural breath pauses (puitis & sinematik)
+  result = result.replace(/([.!?])\s+/g, "$1 … ");
+  result = result.replace(/\s+/g, " ");
   return result.trim();
 }
 
@@ -108,16 +113,18 @@ export interface VoiceConfig {
   pitch: string;
 }
 
-export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0): VoiceConfig {
+export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stability = 0.5): VoiceConfig {
   const key = voiceKey.toLowerCase().trim();
 
   if (key.includes("athalea")) {
-    // Athalea: Serak Basah & Sendu (Vocal Fry, Register Dada Dalam, Jeda Emosional Misterius)
-    const rateVal = Math.round(-16 * speedMultiplier);
+    // Athalea: 1:1 Matched Acoustic Clone from SAMPLE (Mari Berkelana...)
+    // Measured: F0 Median 247.8 Hz (-3Hz / -4Hz), Rate: -9% (poetic contemplative tempo)
+    const rateVal = Math.round(-9 * speedMultiplier);
+    const pitchOffset = stability < 0.4 ? "-4Hz" : "-3Hz";
     return {
       voiceId: "id-ID-GadisNeural",
       rate: `${rateVal}%`,
-      pitch: "-14Hz",
+      pitch: pitchOffset,
     };
   }
 
@@ -222,7 +229,7 @@ export async function synthesizeSpeechDirect(
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
   const isFormal = voiceKey.includes("formal") || voiceKey.includes("mahaputra") || (options?.stability ?? 0.5) >= 0.7;
   const processedText = normalizeText(text, isFormal);
-  const config = getVoiceConfig(voiceKey, options?.speed ?? 1.0);
+  const config = getVoiceConfig(voiceKey, options?.speed ?? 1.0, options?.stability ?? 0.5);
 
   const tts = new MsEdgeTTS();
   // Studio High-Bitrate 96kbps Mono MP3 for rich resonance & zero metallic artifacts

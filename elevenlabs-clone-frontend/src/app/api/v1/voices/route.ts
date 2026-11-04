@@ -15,14 +15,14 @@ export async function GET() {
       },
       {
         voice_id: "athalea",
-        name: "Athalea (Atmospheric Storyteller 🕯️)",
-        category: "indonesian_horror_storyteller",
+        name: "Athalea (Puitis & Intim • 1:1 Clone 🕯️)",
+        category: "indonesian_poetic_storyteller",
         labels: {
           accent: "indonesian_standard",
           gender: "female",
           age: "young_adult",
-          use_case: "dark bedtime stories, supernatural mysteries, folklore, emotional suspense",
-          style: "intimate, calm, mysterious, slightly low, velvety, natural breathing pauses",
+          use_case: "poetic monologue, romantic drama, dark bedtime stories, travel aesthetic, emotional suspense",
+          style: "poetic, intimate, calm, warm F0 248Hz, velvety, natural breathing pauses",
         },
       },
       {

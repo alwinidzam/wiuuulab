@@ -29,8 +29,8 @@ const voices: Voice[] = [
   },
   {
     id: "athalea",
-    name: "Athalea (Atmospheric Storyteller 🕯️)",
-    description: "Tenang, dingin, misterius, jeda dramatis — dongeng gelap, kisah nyata horor & legenda",
+    name: "Athalea (Puitis & Intim • 1:1 Clone 🕯️)",
+    description: "Puitis, lembut, intim, jeda napas alami (1:1 Acoustic Clone) — monolog senja, kisah cinta, misteri & narasi puitis",
     gradientColors: "linear-gradient(45deg, #831843, #be185d, #fda4af, #500724)",
     service: "styletts2",
   },
