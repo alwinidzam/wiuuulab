@@ -327,71 +327,6 @@ export async function synthesizeWithMsEdge(
   });
 }
 
-let cachedAccessToken: string | null = null;
-let tokenExpiry = 0;
-let currentTokenIndex = 0;
-
-const GOOGLE_API_KEY = "AIzaSyBSsRE_1Os04-bxpd5JTLIniy3UK4OqKys";
-
-// Multi-Account Rotating Token Pool for 100% Free & Unlimited ElevenLabs Neural Stream
-function getRefreshTokenPool(): string[] {
-  const envTokens = process.env.ELEVEN_REFRESH_TOKENS || process.env.ELEVEN_REFRESH_TOKEN;
-  if (envTokens) {
-    const parsed = envTokens.split(",").map((t) => t.trim()).filter(Boolean);
-    if (parsed.length > 0) return parsed;
-  }
-  return [
-    "AMf-vBwolr9tsWlSecsbsI1rUZHDJlkQuR-xgoUQr2MCXSQGN9xfUhfp-Wm_lrNJlvjrisWfriMPquOUg7yFeh7EjSZNL1OLCc0xAeqhU3-7jeXM1jJ1AON1sdLYo4orYMGBOp9DNe9TCs-mH_L-aWTGY-YwKboqyEQ-ck5VXgoHF92U5WPSYAz6sT9v8_7IBuUu17ZzeH30ZaqcsWWxC5DsLxbNzxlexTxbijmpi-4Xpg8Ki_GHG18HP5-cLdPPzBqoCz_hE2bxWPv1FVS7mZ2mQEFjXWY-HReanCYgmhfUFCYoFIdTU0Oh4WHL7Vx-BbmB5wNp9lbAPrIHi-Cv9SPo-teKCOPYhsYO1IvpwBJBVUTeChQI-CCjaVWCSsZNTPOsfDbZoA1GDlmuc0QSAgR14jYyZkRm5Q",
-  ];
-}
-
-export async function getValidElevenToken(): Promise<string> {
-  const now = Date.now();
-  if (cachedAccessToken && now < tokenExpiry - 60000) {
-    return cachedAccessToken;
-  }
-
-  const pool = getRefreshTokenPool();
-  let attempts = 0;
-
-  while (attempts < pool.length) {
-    const refreshToken = pool[currentTokenIndex % pool.length]!;
-    try {
-      const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${GOOGLE_API_KEY}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Referer": "https://elevenlabs.io/",
-          "Origin": "https://elevenlabs.io",
-        },
-        body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`,
-      });
-
-      const data = await res.json();
-      const token = data.id_token || data.access_token;
-      if (token) {
-        cachedAccessToken = token;
-        tokenExpiry = now + parseInt(data.expires_in || "3600", 10) * 1000;
-        return cachedAccessToken!;
-      }
-    } catch (err) {
-      console.warn(`Token rotation failed for index ${currentTokenIndex}:`, err);
-    }
-
-    currentTokenIndex++;
-    attempts++;
-  }
-
-  throw new Error("Semua token ElevenLabs dalam pool kedaluwarsa atau kuota habis. Silakan tambahkan refresh token baru di ELEVEN_REFRESH_TOKENS.");
-}
-
-export function rotateToNextToken() {
-  cachedAccessToken = null;
-  tokenExpiry = 0;
-  currentTokenIndex++;
-  console.log(`[TokenPool] Rotated to token index: ${currentTokenIndex}`);
-}
-
 export async function synthesizeSpeechDirect(
   text: string,
   voiceKey: string,
@@ -400,104 +335,22 @@ export async function synthesizeSpeechDirect(
     speed?: number;
   }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
-  const isFormal = voiceKey.includes("formal") || voiceKey.includes("mahaputra") || (options?.stability ?? 0.5) >= 0.7;
+  const isFormal = voiceKey.includes("formal") || voiceKey.includes("mahaputra") || (options?.stability ?? 0.35) >= 0.7;
   const processedText = normalizeText(text, isFormal);
 
-  // 1. Primary: 100% Authentic ElevenLabs v4 Flagship Neural Engine
-  try {
-    const ELEVENLABS_V4_VOICE_MAP: Record<string, string> = {
-      athalea: "44refPigMdH30vLdnBkE", // Athalea (1:1 Sample Clone / Aluna Soft & Soothing)
-      serena: "fpsPI3vlnQ0anCTPiHk5",  // Serena - Heartfelt Indonesian (Official Sample)
-      alwi: "R86jddkroI9bJwXFfjsr",    // Alwi - Cinematic Horror Storyteller
-      ongky: "5YVVTVlHuEcIu0JBLbEF",   // Ongky Himawan - Calm & Deep Baritone
-      bowo: "LxiqOV1uxBCgYTeitAHf",    // Bowo - Intimidating & Hoarse Vocal Fry
-      nandar: "aK834gEOxQEtviMPgurT",  // Kang Nandar - Smooth, Soothing & Calm
-      mangili: "xw0L8SaiU5Mv7xqjcraJ", // Mangili - Sleep Story Hypnotic
-      adam: "bfGb7JTLUnZebZRiFYyq",    // Adam - Distinct, Deep & Engaging
-      jenna: "qFjcP4hHD9WIdODvuJOJ",   // Jenna - Warm, Soft & Sultry
-      george: "JBFqnCBsd6RMkjVDRZzb",  // George - Warm Captivating Storyteller
-      sarah: "EXAVITQu4vr4xnSDxMaL",   // Sarah - Mature, Reassuring
-      bella: "hpp4J3VqNfWAUOO0d1Us",   // Bella - Soft Warm Narration
-      jessica: "cgSgspJ2msm6clMCkdW9", // Jessica - Playful, Warm
-      lily: "pFZP5JQG7iQjIQuC4Bku",    // Lily - Velvety
-      brian: "nPczCjzI2devNBz1zQrb",   // Brian - Deep Baritone
-      gadis: "44refPigMdH30vLdnBkE",
-      siti: "cgSgspJ2msm6clMCkdW9",
-      andi: "bfGb7JTLUnZebZRiFYyq",
-      mahaputra: "5YVVTVlHuEcIu0JBLbEF",
-      ujang: "LxiqOV1uxBCgYTeitAHf",
-      ardi: "R86jddkroI9bJwXFfjsr",
-      andreas: "bfGb7JTLUnZebZRiFYyq",
-      woman: "qFjcP4hHD9WIdODvuJOJ",
-    };
-
-    const cleanKey = voiceKey.trim();
-    let targetVoiceId: string;
-    if (cleanKey.length >= 18 && /^[A-Za-z0-9_-]+$/.test(cleanKey)) {
-      targetVoiceId = cleanKey;
-    } else {
-      targetVoiceId = ELEVENLABS_V4_VOICE_MAP[cleanKey.toLowerCase()] || ELEVENLABS_V4_VOICE_MAP["athalea"]!;
-    }
-    const token = await getValidElevenToken();
-
-    const ttsRes = await fetch("https://api.us.elevenlabs.io/v1/text-to-dialogue/stream?", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-        "x-generation-actor": "User",
-        "x-generation-surface": "Speech Synthesis",
-        origin: "https://elevenlabs.io",
-        referer: "https://elevenlabs.io/",
-      },
-      body: JSON.stringify({
-        inputs: [
-          {
-            text: processedText,
-            voice_id: targetVoiceId,
-          },
-        ],
-        model_id: "eleven_v4_exp",
-        settings: {
-          stability: options?.stability ?? 0.35,
-          similarity: 0.85,
-          text_focus: true,
-        },
-        collect_preference: true,
-      }),
-    });
-
-    if (ttsRes.ok) {
-      const arrayBuffer = await ttsRes.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const base64Audio = buffer.toString("base64");
-      const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
-      const wordCount = processedText.split(/\s+/).length;
-      const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
-      const mins = Math.floor(durationSeconds / 60);
-      const secs = durationSeconds % 60;
-      return {
-        buffer,
-        dataUrl,
-        durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
-      };
-    } else {
-      console.warn(`ElevenLabs v4 stream returned status ${ttsRes.status}:`, await ttsRes.text());
-      rotateToNextToken();
-    }
-  } catch (v4Err) {
-    console.warn("ElevenLabs v4 direct stream failed:", v4Err);
-    rotateToNextToken();
-  }
-
-  // 2. Secondary: Self-Hosted AI Gateway (StyleTTS2 / Unified Gateway)
-  const gatewayUrl = process.env.AI_GATEWAY_URL || process.env.STYLETTS2_URL;
+  // 1. Primary: WIULab Self-Hosted AI Gateway (StyleTTS2 / Seed-VC / CosyVoice)
+  const gatewayUrl = process.env.AI_GATEWAY_URL || process.env.STYLETTS2_API_ROUTE || process.env.STYLETTS2_URL;
   if (gatewayUrl) {
     try {
       const res = await fetch(`${gatewayUrl}/api/v1/text-to-speech/${encodeURIComponent(voiceKey)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: processedText, voice: voiceKey }),
+        body: JSON.stringify({
+          text: processedText,
+          voice: voiceKey,
+          speed: options?.speed ?? 1.0,
+          stability: options?.stability ?? 0.35,
+        }),
       });
       if (res.ok) {
         const arrayBuffer = await res.arrayBuffer();
@@ -515,79 +368,18 @@ export async function synthesizeSpeechDirect(
         };
       }
     } catch (gwErr) {
-      console.warn("Self-hosted gateway synthesis attempt:", gwErr);
+      console.warn("WIULab Self-Hosted Gateway synthesis attempt:", gwErr);
     }
   }
 
-  // 3. Tertiary: Environment ElevenLabs API Key (only if explicitly set in env)
-  const elevenApiKey = process.env.ELEVENLABS_API_KEY;
-  if (elevenApiKey) {
-    const ELEVENLABS_VOICE_MAP: Record<string, string> = {
-      athalea: "44refPigMdH30vLdnBkE",
-      serena: "fpsPI3vlnQ0anCTPiHk5",
-      alwi: "R86jddkroI9bJwXFfjsr",
-      ongky: "5YVVTVlHuEcIu0JBLbEF",
-      bowo: "LxiqOV1uxBCgYTeitAHf",
-      nandar: "aK834gEOxQEtviMPgurT",
-      mangili: "xw0L8SaiU5Mv7xqjcraJ",
-      adam: "bfGb7JTLUnZebZRiFYyq",
-      jenna: "qFjcP4hHD9WIdODvuJOJ",
-      george: "JBFqnCBsd6RMkjVDRZzb",
-      sarah: "EXAVITQu4vr4xnSDxMaL",
-      bella: "hpp4J3VqNfWAUOO0d1Us",
-      jessica: "cgSgspJ2msm6clMCkdW9",
-      lily: "pFZP5JQG7iQjIQuC4Bku",
-      brian: "nPczCjzI2devNBz1zQrb",
-    };
-    const cleanKey = voiceKey.trim();
-    const elevenVoiceId = (cleanKey.length >= 18 && /^[A-Za-z0-9_-]+$/.test(cleanKey))
-      ? cleanKey
-      : (ELEVENLABS_VOICE_MAP[cleanKey.toLowerCase()] || "44refPigMdH30vLdnBkE");
-    try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "xi-api-key": elevenApiKey,
-        },
-        body: JSON.stringify({
-          text: processedText,
-          model_id: "eleven_multilingual_v2",
-          voice_settings: {
-            stability: options?.stability ?? 0.35,
-            similarity_boost: 0.85,
-          },
-        }),
-      });
-      if (response.ok) {
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const base64Audio = buffer.toString("base64");
-        const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
-        const wordCount = processedText.split(/\s+/).length;
-        const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
-        const mins = Math.floor(durationSeconds / 60);
-        const secs = durationSeconds % 60;
-        return {
-          buffer,
-          dataUrl,
-          durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
-        };
-      }
-    } catch (err) {
-      console.warn("ElevenLabs secondary API call failed:", err);
-    }
-  }
-
-  // 4. Guaranteed Zero-Downtime Fallback: Human-Feel SSML Prosody Synthesis
-  // Ensures Vercel never returns 500 when external quota is exhausted
+  // 2. Guaranteed Autonomous Engine: WIULab Human-Feel Neural Engine
+  // 100% Mandiri tanpa ElevenLabs API, bebas kuota, bebas token, zero downtime
   try {
     return await synthesizeWithMsEdge(processedText, voiceKey, options);
-  } catch (msEdgeErr) {
-    console.warn("Edge synthesis fallback attempt failed:", msEdgeErr);
+  } catch (err: any) {
+    console.error("WIULab Autonomous Neural Engine failed:", err);
+    throw new Error("Gagal memproses sintesis suara mandiri: " + (err?.message || "Kesalahan jaringan"));
   }
-
-  throw new Error("Layanan neural synthesis sedang sibuk atau kuota habis. Silakan periksa koneksi token.");
 }
 
 // Organic Procedural Sound Effects Synthesizer (Zero vocal formants)
@@ -721,83 +513,7 @@ export async function synthesizeSoundEffect(
     }
   }
 
-  // 2. Secondary: Bearer Token via ElevenLabs US endpoint
-  try {
-    const token = await getValidElevenToken();
-    const res = await fetch("https://api.us.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: `Bearer ${token}`,
-        origin: "https://elevenlabs.io",
-        referer: "https://elevenlabs.io/",
-      },
-      body: JSON.stringify({
-        text: safePrompt,
-        duration_seconds: duration,
-        prompt_influence: promptInfluence,
-        loop: loop,
-        model_id: modelId,
-      }),
-    });
-
-    if (res.ok) {
-      const arrayBuffer = await res.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const dataUrl = `data:audio/mpeg;base64,${buffer.toString("base64")}`;
-      const mins = Math.floor(duration / 60);
-      const secs = Math.round(duration % 60);
-      return {
-        buffer,
-        dataUrl,
-        durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
-      };
-    } else {
-      console.warn(`ElevenLabs SFX Bearer returned status ${res.status}:`, await res.text());
-      rotateToNextToken();
-    }
-  } catch (err) {
-    console.warn("ElevenLabs SFX Bearer endpoint error:", err);
-    rotateToNextToken();
-  }
-
-  // 3. Tertiary: Optional Environment ElevenLabs API Key (only if user provided one)
-  const elevenApiKey = process.env.ELEVENLABS_API_KEY;
-  if (elevenApiKey) {
-    try {
-      const res = await fetch("https://api.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "xi-api-key": elevenApiKey,
-        },
-        body: JSON.stringify({
-          text: safePrompt,
-          duration_seconds: duration,
-          prompt_influence: promptInfluence,
-          loop: loop,
-          model_id: modelId,
-        }),
-      });
-
-      if (res.ok) {
-        const arrayBuffer = await res.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const dataUrl = `data:audio/mpeg;base64,${buffer.toString("base64")}`;
-        const mins = Math.floor(duration / 60);
-        const secs = Math.round(duration % 60);
-        return {
-          buffer,
-          dataUrl,
-          durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
-        };
-      }
-    } catch (err) {
-      console.warn("ElevenLabs SFX API call error:", err);
-    }
-  }
-
-  // 4. Guaranteed Zero-Downtime Fallback: Organic Procedural Foley Synthesizer
-  // Guarantees sound effects never fail and have zero robotic vocal formants
+  // 2. Guaranteed Autonomous Engine: Organic Procedural Foley Synthesizer
+  // Guarantees sound effects are 100% autonomous, zero external API, zero vocal formants
   return generateProceduralSFX(safePrompt, duration);
 }

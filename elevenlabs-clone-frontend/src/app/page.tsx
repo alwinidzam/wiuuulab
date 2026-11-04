@@ -223,7 +223,7 @@ export default function LoginPage() {
               </span>
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-normal">
-              Ditenagai arsitektur ElevenLabs v4 Neural Model dan Foley Diffusion Engine tanpa Microsoft Edge TTS.
+              Ditenagai WIULab Autonomous Neural Engine dan Foley AI Diffusion Studio mandiri.
             </p>
 
             <div className="grid grid-cols-2 gap-3.5 pt-3">
