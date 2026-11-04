@@ -113,6 +113,27 @@ const voices: Voice[] = [
     gradientColors: "linear-gradient(45deg, #831843, #db2777, #fbcfe8, #500724)",
     service: "styletts2",
   },
+  {
+    id: "brian",
+    name: "Brian (Official ElevenLabs Deep Baritone 🎙️)",
+    description: "Deep, resonant, rich narration — signature cinematic baritone",
+    gradientColors: "linear-gradient(45deg, #0f172a, #334155, #64748b, #1e293b)",
+    service: "styletts2",
+  },
+  {
+    id: "jessica",
+    name: "Jessica (Official ElevenLabs Playful & Warm 🌻)",
+    description: "Bright, engaging, friendly voice for dynamic storytelling & podcasts",
+    gradientColors: "linear-gradient(45deg, #d97706, #f59e0b, #fef3c7, #b45309)",
+    service: "styletts2",
+  },
+  {
+    id: "lily",
+    name: "Lily (Official ElevenLabs Velvety Smooth 🌿)",
+    description: "Velvety, calm, soothing narration for bedtime stories and documentaries",
+    gradientColors: "linear-gradient(45deg, #047857, #10b981, #d1fae5, #065f46)",
+    service: "styletts2",
+  },
 
   // English & Cloned Voices
   {

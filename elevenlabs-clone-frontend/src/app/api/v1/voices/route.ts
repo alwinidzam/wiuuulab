@@ -134,6 +134,24 @@ export async function GET() {
         labels: { accent: "american", gender: "female", age: "middle_aged", use_case: "intimate reflective narration, romantic drama" },
       },
       {
+        voice_id: "brian",
+        name: "Brian (Official ElevenLabs Deep Baritone 🎙️)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "male", age: "middle_aged", use_case: "deep baritone narration, cinema, commercial" },
+      },
+      {
+        voice_id: "jessica",
+        name: "Jessica (Official ElevenLabs Playful & Warm 🌻)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "female", age: "young", use_case: "playful, conversational, commercial" },
+      },
+      {
+        voice_id: "lily",
+        name: "Lily (Official ElevenLabs Velvety Smooth 🌿)",
+        category: "official_elevenlabs",
+        labels: { accent: "british", gender: "female", age: "middle_aged", use_case: "velvety, calm narration, documentary" },
+      },
+      {
         voice_id: "andreas",
         name: "Andreas (English Deep Narrative)",
         category: "premade",

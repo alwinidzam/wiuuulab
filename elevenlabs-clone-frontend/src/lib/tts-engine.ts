@@ -79,30 +79,18 @@ const INDONESIAN_FORMAL_MAP: [RegExp, string][] = [
   [/\bbikin\b/gi, "membuat"],
 ];
 
-export function normalizeText(text: string, isFormal = false): string {
-  const map = isFormal ? INDONESIAN_FORMAL_MAP : INDONESIAN_CASUAL_MAP;
-  let result = text;
-  for (const [regex, replacement] of map) {
-    result = result.replace(regex, replacement);
-  }
+export function normalizeText(text: string): string {
+  // Lossless text normalization: preserves exact user vocabulary, commas, and punctuation
+  // Eliminates unprompted words, hesitation artifacts, and glottal breathing clicks
+  let result = text.replace(/\s+/g, " ");
 
-  // Clean multi-spaces & normalize ellipsis
-  result = result.replace(/\s+/g, " ");
-  result = result.replace(/\.{3,}/g, " … ");
-
-  // Natural comma, semicolon, and colon breath micro-pauses
-  result = result.replace(/([,;:])\s*(?!\.\.\.)/g, "$1 … ");
-
-  // Handle ElevenLabs latent prompt tags -> convert to acoustic pauses & expressive breathing
-  result = result.replace(/\[(whispers?|whispering|bisik)\]/gi, " … ");
-  result = result.replace(/\[\/(whispers?|whispering|bisik)\]/gi, "");
-  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, " … — ");
-  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, " … — ");
-  result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, " … ");
+  // Handle bracket vocal hints cleanly
+  result = result.replace(/\[\/?(whispers?|whispering|bisik)\]/gi, "...");
+  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, "...");
+  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, "...");
+  result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, "...");
   result = result.replace(/\[.*?\]/g, ""); // strip remaining bracket tags
 
-  // Sentence boundary natural breath pauses (puitis & sinematik)
-  result = result.replace(/([.!?])\s+/g, "$1 … ");
   result = result.replace(/\s+/g, " ");
   return result.trim();
 }
@@ -282,7 +270,13 @@ export async function synthesizeSpeechDirect(
       woman: "EXAVITQu4vr4xnSDxMaL",
     };
 
-    const targetVoiceId = ELEVENLABS_V4_VOICE_MAP[voiceKey.toLowerCase().trim()] || ELEVENLABS_V4_VOICE_MAP["athalea"]!;
+    const cleanKey = voiceKey.trim();
+    let targetVoiceId: string;
+    if (cleanKey.length >= 18 && /^[A-Za-z0-9_-]+$/.test(cleanKey)) {
+      targetVoiceId = cleanKey;
+    } else {
+      targetVoiceId = ELEVENLABS_V4_VOICE_MAP[cleanKey.toLowerCase()] || ELEVENLABS_V4_VOICE_MAP["athalea"]!;
+    }
     const token = await getValidElevenToken();
 
     const ttsRes = await fetch("https://api.us.elevenlabs.io/v1/text-to-dialogue/stream?", {
@@ -304,9 +298,9 @@ export async function synthesizeSpeechDirect(
         ],
         model_id: "eleven_v4_exp",
         settings: {
-          stability: options?.stability ?? 0.38,
+          stability: options?.stability ?? 0.5,
           similarity: 0.85,
-          text_focus: false,
+          text_focus: true,
         },
         collect_preference: true,
       }),
@@ -335,16 +329,21 @@ export async function synthesizeSpeechDirect(
   const elevenApiKey = process.env.ELEVENLABS_API_KEY || "sk_9424176c8c0b66e8baa2b5f6497ec4ed23e7f3b4023039d6";
   if (elevenApiKey) {
     const ELEVENLABS_VOICE_MAP: Record<string, string> = {
-      alwi: "nPczCjzI2devNBz1zQrb",
+      athalea: "44refPigMdH30vLdnBkE",
+      serena: "fpsPI3vlnQ0anCTPiHk5",
+      alwi: "R86jddkroI9bJwXFfjsr",
       george: "JBFqnCBsd6RMkjVDRZzb",
       adam: "pNInz6obpgDQGcFmaJgB",
       sarah: "EXAVITQu4vr4xnSDxMaL",
       bella: "hpp4J3VqNfWAUOO0d1Us",
       jessica: "cgSgspJ2msm6clMCkdW9",
       lily: "pFZP5JQG7iQjIQuC4Bku",
-      serena: "fpsPI3vlnQ0anCTPiHk5",
+      brian: "nPczCjzI2devNBz1zQrb",
     };
-    const elevenVoiceId = ELEVENLABS_VOICE_MAP[voiceKey.toLowerCase().trim()] || "pNInz6obpgDQGcFmaJgB";
+    const cleanKey = voiceKey.trim();
+    const elevenVoiceId = (cleanKey.length >= 18 && /^[A-Za-z0-9_-]+$/.test(cleanKey))
+      ? cleanKey
+      : (ELEVENLABS_VOICE_MAP[cleanKey.toLowerCase()] || "44refPigMdH30vLdnBkE");
     try {
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`, {
         method: "POST",
@@ -356,7 +355,7 @@ export async function synthesizeSpeechDirect(
           text: processedText,
           model_id: "eleven_multilingual_v2",
           voice_settings: {
-            stability: options?.stability ?? 0.38,
+            stability: options?.stability ?? 0.5,
             similarity_boost: 0.85,
           },
         }),
@@ -381,42 +380,5 @@ export async function synthesizeSpeechDirect(
     }
   }
 
-  const config = getVoiceConfig(voiceKey, options?.speed ?? 1.0, options?.stability ?? 0.5);
-
-  const tts = new MsEdgeTTS();
-  // Studio High-Bitrate 96kbps Mono MP3 for rich resonance & zero metallic artifacts
-  await tts.setMetadata(config.voiceId, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
-
-  const { audioStream } = tts.toStream(processedText, {
-    pitch: config.pitch,
-    rate: config.rate,
-  });
-
-  const chunks: Buffer[] = [];
-  audioStream.on("data", (chunk: Buffer) => {
-    chunks.push(chunk);
-  });
-
-  await new Promise<void>((resolve, reject) => {
-    audioStream.on("end", () => resolve());
-    audioStream.on("error", (err: Error) => reject(err));
-  });
-
-  tts.close();
-
-  const buffer = Buffer.concat(chunks);
-  const base64 = buffer.toString("base64");
-  const dataUrl = `data:audio/mp3;base64,${base64}`;
-
-  // Estimate duration (24kHz 96kbps mono MP3 ~ 12000 bytes/sec)
-  const seconds = Math.max(1, Math.round(buffer.length / 12000));
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  const durationEstimate = `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-
-  return {
-    buffer,
-    dataUrl,
-    durationEstimate,
-  };
+  throw new Error("ElevenLabs neural synthesis unavailable. Mohon periksa koneksi token ElevenLabs.");
 }

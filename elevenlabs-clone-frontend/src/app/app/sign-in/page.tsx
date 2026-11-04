@@ -18,11 +18,12 @@ export default function SignInPage() {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "admin@wiuuulab.ai",
+      password: "wiuuulab_admin_2026!",
     },
     mode: "onChange",
   });
@@ -33,6 +34,15 @@ export default function SignInPage() {
   useEffect(() => {
     setIsFormValid(!!email && !!password);
   }, [email, password]);
+
+  const handleQuickAdminLogin = async () => {
+    setValue("email", "admin@wiuuulab.ai", { shouldValidate: true });
+    setValue("password", "wiuuulab_admin_2026!", { shouldValidate: true });
+    await onSubmit({
+      email: "admin@wiuuulab.ai",
+      password: "wiuuulab_admin_2026!",
+    });
+  };
 
   const onSubmit = async (data: SignInFormValues) => {
     try {
@@ -81,6 +91,24 @@ export default function SignInPage() {
                 {error}
               </div>
             )}
+
+            <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Akun Admin Bawaan</p>
+                  <p className="text-sm font-semibold text-gray-900">admin@wiuuulab.ai</p>
+                  <p className="font-mono text-xs text-gray-500">wiuuulab_admin_2026!</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleQuickAdminLogin}
+                  disabled={isLoading}
+                  className="rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white shadow transition-all hover:bg-gray-800 disabled:opacity-50"
+                >
+                  ⚡ Masuk Cepat
+                </button>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-4">

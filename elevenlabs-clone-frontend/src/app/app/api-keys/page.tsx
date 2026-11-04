@@ -217,6 +217,152 @@ export default function ApiKeysPage() {
           </div>
         </div>
 
+        {/* Voice Catalog Card */}
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">
+                Katalog Suara & Voice ID Lengkap
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Gunakan alias nama suara atau ID ElevenLabs asli di parameter <code>voice</code> / URL endpoint API.
+              </p>
+            </div>
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+              100% ElevenLabs v4 Neural
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-xs text-gray-500 uppercase border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3">Nama Karakter</th>
+                  <th className="px-6 py-3">Bahasa & Gaya</th>
+                  <th className="px-6 py-3">Alias Voice ID</th>
+                  <th className="px-6 py-3">ElevenLabs Voice ID</th>
+                  <th className="px-6 py-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-gray-700">
+                {[
+                  {
+                    name: "Athalea 🕯️",
+                    desc: "Puitis, intim, monolog senja (1:1 Clone)",
+                    lang: "Indonesian",
+                    alias: "athalea",
+                    elevenId: "44refPigMdH30vLdnBkE",
+                    badge: "1:1 Matched",
+                  },
+                  {
+                    name: "Serena 🎙️",
+                    desc: "Heartfelt, lembut, penuh penghayatan novel",
+                    lang: "Indonesian",
+                    alias: "serena",
+                    elevenId: "fpsPI3vlnQ0anCTPiHk5",
+                    badge: "Ground Truth",
+                  },
+                  {
+                    name: "Alwi 🎬",
+                    desc: "Bariton berat, tenang, horor & creepypasta",
+                    lang: "Indonesian",
+                    alias: "alwi",
+                    elevenId: "R86jddkroI9bJwXFfjsr",
+                    badge: "Cinematic",
+                  },
+                  {
+                    name: "Adam 🎙️",
+                    desc: "Signature ElevenLabs baritone, authoritative",
+                    lang: "English (US)",
+                    alias: "adam",
+                    elevenId: "pNInz6obpgDQGcFmaJgB",
+                    badge: "Official",
+                  },
+                  {
+                    name: "Brian 🎙️",
+                    desc: "Deep, resonant, rich cinematic baritone",
+                    lang: "English (US)",
+                    alias: "brian",
+                    elevenId: "nPczCjzI2devNBz1zQrb",
+                    badge: "Official",
+                  },
+                  {
+                    name: "George 🕯️",
+                    desc: "Warm British storyteller, captivating narration",
+                    lang: "English (UK)",
+                    alias: "george",
+                    elevenId: "JBFqnCBsd6RMkjVDRZzb",
+                    badge: "Official",
+                  },
+                  {
+                    name: "Sarah ✨",
+                    desc: "Mature, reassuring, audiobook narrator",
+                    lang: "English (US)",
+                    alias: "sarah",
+                    elevenId: "EXAVITQu4vr4xnSDxMaL",
+                    badge: "Official",
+                  },
+                  {
+                    name: "Bella 🌸",
+                    desc: "Soft, warm, intimate reflective stories",
+                    lang: "English (US)",
+                    alias: "bella",
+                    elevenId: "hpp4J3VqNfWAUOO0d1Us",
+                    badge: "Official",
+                  },
+                  {
+                    name: "Jessica 🌻",
+                    desc: "Bright, engaging, friendly storytelling",
+                    lang: "English (US)",
+                    alias: "jessica",
+                    elevenId: "cgSgspJ2msm6clMCkdW9",
+                    badge: "Official",
+                  },
+                  {
+                    name: "Lily 🌿",
+                    desc: "Velvety smooth, calm documentary narration",
+                    lang: "English (UK)",
+                    alias: "lily",
+                    elevenId: "pFZP5JQG7iQjIQuC4Bku",
+                    badge: "Official",
+                  },
+                ].map((v) => (
+                  <tr key={v.alias} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-3.5 font-medium text-gray-900 whitespace-nowrap">
+                      {v.name}
+                    </td>
+                    <td className="px-6 py-3.5 text-xs text-gray-500">
+                      <div><span className="font-semibold text-gray-700">{v.lang}</span> • {v.desc}</div>
+                    </td>
+                    <td className="px-6 py-3.5 font-mono text-xs text-gray-800">
+                      <span className="rounded bg-gray-100 px-2 py-1 font-semibold">{v.alias}</span>
+                    </td>
+                    <td className="px-6 py-3.5 font-mono text-xs text-gray-500">
+                      <span className="truncate block max-w-[130px]">{v.elevenId}</span>
+                    </td>
+                    <td className="px-6 py-3.5 text-right whitespace-nowrap">
+                      <button
+                        onClick={() => copyToClipboard(v.alias)}
+                        className="rounded-lg bg-gray-100 hover:bg-black hover:text-white px-2.5 py-1 text-xs font-medium text-gray-700 transition-colors mr-1"
+                        title="Salin Alias"
+                      >
+                        Salin Alias
+                      </button>
+                      <button
+                        onClick={() => copyToClipboard(v.elevenId)}
+                        className="rounded-lg border border-gray-200 hover:border-black px-2 py-1 text-xs font-mono text-gray-500 hover:text-black transition-colors"
+                        title="Salin Raw ID"
+                      >
+                        Salin ID
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         {/* Integration Guides Card */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center space-x-2">
@@ -268,22 +414,30 @@ export default function ApiKeysPage() {
                 <div className="rounded-lg bg-gray-900 p-4 font-mono text-xs text-gray-100">
                   <p className="text-gray-400"># Setting di OpenWebUI / App AI:</p>
                   <p><strong>TTS Engine:</strong> OpenAI</p>
-                  <p><strong>API Base URL:</strong> {baseUrl || "https://your-domain.vercel.app"}/api/v1</p>
+                  <p><strong>API Base URL:</strong> {baseUrl || "https://wiuuulab.vercel.app"}/api/v1</p>
                   <p><strong>API Key:</strong> sk_live_xxxxxxxxxxxxxxxxxxxxxxxx</p>
-                  <p><strong>Voice:</strong> andreas (atau woman, trump)</p>
+                  <p><strong>Voice:</strong> athalea (atau serena, alwi, adam, brian)</p>
                 </div>
               </div>
             )}
 
             {activeTab === "elevenlabs" && (
               <div className="space-y-3 text-sm text-gray-600">
-                <p>Format request langsung endpoint mirip ElevenLabs:</p>
+                <p>Format request langsung endpoint mirip ElevenLabs (bisa pakai alias nama suara atau Voice ID asli):</p>
                 <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 font-mono text-xs text-gray-100">
-{`curl -X POST "${baseUrl || "https://your-domain.vercel.app"}/api/v1/text-to-speech/andreas" \\
+{`# 1. Menggunakan Alias Suara (athalea)
+curl -X POST "${baseUrl || "https://wiuuulab.vercel.app"}/api/v1/text-to-speech/athalea" \\
   -H "xi-api-key: sk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
   -H "Content-Type: application/json" \\
-  -d '{"text": "Halo, ini suara buatan AI studio saya!"}' \\
-  --output voice.wav`}
+  -d '{"text": "Mari berkelana tanpa rencana, menikmati senja bersama wiuuulab."}' \\
+  --output voice_athalea.mp3
+
+# 2. Menggunakan Raw ElevenLabs Voice ID (Serena: fpsPI3vlnQ0anCTPiHk5)
+curl -X POST "${baseUrl || "https://wiuuulab.vercel.app"}/api/v1/text-to-speech/fpsPI3vlnQ0anCTPiHk5" \\
+  -H "xi-api-key: sk_live_xxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{"text": "Halo, ini Serena dengan penghayatan emosional mendalam."}' \\
+  --output voice_serena.mp3`}
                 </pre>
               </div>
             )}
@@ -295,18 +449,19 @@ export default function ApiKeysPage() {
 {`from openai import OpenAI
 
 client = OpenAI(
-    base_url="${baseUrl || "https://your-domain.vercel.app"}/api/v1",
+    base_url="${baseUrl || "https://wiuuulab.vercel.app"}/api/v1",
     api_key="sk_live_xxxxxxxxxxxxxxxxxxxxxxxx"
 )
 
+# Sintesis suara Athalea (1:1 Sample Clone)
 response = client.audio.speech.create(
-    model="styletts2",
-    voice="andreas", # atau "woman"
-    input="Halo, saya berbicara menggunakan ElevenLabs Clone!"
+    model="eleven_v4_exp",
+    voice="athalea", # atau "serena", "alwi", "adam", "brian"
+    input="Mari berkelana tanpa rencana, menikmati heningnya malam bersama suara ini."
 )
 
-response.stream_to_file("output.wav")
-print("Audio tersimpan di output.wav")`}
+response.stream_to_file("output_athalea.mp3")
+print("Suara Athalea berhasil disimpan ke output_athalea.mp3")`}
                 </pre>
               </div>
             )}
