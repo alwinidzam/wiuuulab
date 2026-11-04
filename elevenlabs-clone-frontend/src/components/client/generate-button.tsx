@@ -71,6 +71,7 @@ export function GenerateButton({
         )}
 
         <button
+          data-testid="generate-speech-button"
           className={`h-10 w-full whitespace-nowrap rounded-xl px-4 text-sm font-semibold text-white transition-all duration-200 ${
             isDisabled || isLoading
               ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border border-transparent"

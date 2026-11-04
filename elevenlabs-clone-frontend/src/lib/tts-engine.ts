@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { analyzeContext, type ContextAnalysisResult } from "./context-engine";
 
 // Indonesian Slang & Colloquial Normalizer (Jaksel, Casual, Social Media)
@@ -476,20 +475,44 @@ export async function synthesizeZeroShotHF(
 }
 
 async function streamFromVoice(voiceId: string, pitch: string, rate: string, text: string): Promise<Buffer> {
-  const tts = new MsEdgeTTS();
-  await tts.setMetadata(voiceId, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
-  const { audioStream } = tts.toStream(text, { pitch, rate });
+  // 1. Try local wiuuulab Python Gateway
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/v1/text-to-speech/${encodeURIComponent(voiceId)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice: voiceId }),
+    });
+    if (res.ok) {
+      const arr = await res.arrayBuffer();
+      return Buffer.from(arr);
+    }
+  } catch (_) {}
+
+  // 2. Direct Python edge_tts CLI (Node 24 safe, zero t.mask crash)
+  const { spawn } = await import("child_process");
   return new Promise((resolve, reject) => {
+    const script = `
+import asyncio, sys, edge_tts
+async def main():
+    comm = edge_tts.Communicate(text=sys.argv[1], voice=sys.argv[2], rate=sys.argv[3], pitch=sys.argv[4])
+    d = bytearray()
+    async for c in comm.stream():
+        if c["type"] == "audio":
+            d.extend(c["data"])
+    sys.stdout.buffer.write(d)
+asyncio.run(main())
+`;
+    const child = spawn("python", ["-c", script, text, voiceId, rate, pitch]);
     const chunks: Buffer[] = [];
-    audioStream.on("data", (chunk: Buffer) => chunks.push(chunk));
-    audioStream.on("end", () => {
-      try { tts.close(); } catch (_) {}
-      resolve(Buffer.concat(chunks));
+    child.stdout.on("data", (c) => chunks.push(c));
+    child.on("close", (code) => {
+      if (code === 0 && chunks.length > 0) {
+        resolve(Buffer.concat(chunks));
+      } else {
+        reject(new Error(`Python synthesis exit code: ${code}`));
+      }
     });
-    audioStream.on("error", (err: any) => {
-      try { tts.close(); } catch (_) {}
-      reject(err);
-    });
+    child.on("error", reject);
   });
 }
 
@@ -517,7 +540,8 @@ export async function synthesizeWithMsEdge(
   }
 
   const base64Audio = buffer.toString("base64");
-  const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
+  const isWav = buffer.subarray(0, 4).toString() === "RIFF";
+  const dataUrl = `data:${isWav ? "audio/wav" : "audio/mpeg"};base64,${base64Audio}`;
   const wordCount = formattedText.split(/\s+/).length;
   const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
   const mins = Math.floor(durationSeconds / 60);
@@ -561,7 +585,8 @@ export async function synthesizeSpeechDirect(
         const arrayBuffer = await res.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const base64Audio = buffer.toString("base64");
-        const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
+        const isWav = buffer.subarray(0, 4).toString() === "RIFF";
+        const dataUrl = `data:${isWav ? "audio/wav" : "audio/mpeg"};base64,${base64Audio}`;
         const wordCount = processedText.split(/\s+/).length;
         const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
         const mins = Math.floor(durationSeconds / 60);

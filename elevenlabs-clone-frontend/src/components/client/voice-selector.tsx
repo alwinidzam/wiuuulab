@@ -36,6 +36,7 @@ export function VoiceSelector({ service }: { service: ServiceType }) {
   return (
     <div className="relative" ref={dropdownRef}>
       <div
+        data-testid="voice-selector-trigger"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-md px-3.5 py-2.5 hover:cursor-pointer hover:bg-sky-50/60 hover:border-sky-300 transition-all shadow-xs"
       >
@@ -60,6 +61,7 @@ export function VoiceSelector({ service }: { service: ServiceType }) {
           {voices.map((voice) => (
             <div
               key={voice.id}
+              data-testid={`voice-option-${voice.id}`}
               className={`flex items-center rounded-xl px-3 py-2 hover:cursor-pointer hover:bg-sky-50 transition-colors ${
                 voice.id === selectedVoice?.id ? "bg-sky-50/80 text-sky-800 font-semibold" : "text-slate-700"
               }`}
