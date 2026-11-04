@@ -84,6 +84,9 @@ export function normalizeText(text: string): string {
   // Eliminates unprompted words, hesitation artifacts, and glottal breathing clicks
   let result = text.replace(/\s+/g, " ");
 
+  // Ensure punctuation attaches cleanly to preceding word (no stray space before comma/period)
+  result = result.replace(/\s+([,.:;?!])/g, "$1");
+
   // Handle bracket vocal hints cleanly
   result = result.replace(/\[\/?(whispers?|whispering|bisik)\]/gi, "...");
   result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, "...");
@@ -298,7 +301,7 @@ export async function synthesizeSpeechDirect(
         ],
         model_id: "eleven_v4_exp",
         settings: {
-          stability: options?.stability ?? 0.5,
+          stability: options?.stability ?? 0.55,
           similarity: 0.85,
           text_focus: true,
         },
