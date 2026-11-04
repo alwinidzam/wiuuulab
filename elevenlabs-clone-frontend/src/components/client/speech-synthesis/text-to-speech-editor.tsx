@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import {
   IoBookOutline,
   IoFilmOutline,
@@ -13,10 +13,7 @@ import {
 } from "react-icons/io5";
 import { ServiceType } from "~/types/services";
 import { GenerateButton } from "../generate-button";
-import {
-  generateTextToSpeech,
-  generationStatus,
-} from "~/actions/generate-speech";
+import { generateTextToSpeech } from "~/actions/generate-speech";
 import { useVoiceStore } from "~/stores/voice-store";
 import { useAudioStore } from "~/stores/audio-store";
 import toast from "react-hot-toast";
@@ -33,82 +30,28 @@ export function TextToSpeechEditor({
     "Start typing here or paste any text you want to turn into lifelike speech...",
   );
   const [loading, setLoading] = useState(false);
-  const [currentAudioId, setCurrentAudioId] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const getSelectedVoice = useVoiceStore((state) => state.getSelectedVoice);
-
   const { playAudio } = useAudioStore();
-
-  useEffect(() => {
-    if (!currentAudioId || !loading) return;
-
-    const pollInterval = setInterval(async () => {
-      try {
-        const status = await generationStatus(currentAudioId);
-
-        const selectedVoice = getSelectedVoice("styletts2");
-        if (status.success && status.audioUrl && selectedVoice) {
-          clearInterval(pollInterval);
-          setLoading(false);
-
-          const newAudio = {
-            id: currentAudioId,
-            title:
-              textContent.substring(0, 50) +
-              (textContent.length > 50 ? "..." : ""),
-            audioUrl: status.audioUrl,
-            voice: selectedVoice.id,
-            duration: "0:30",
-            progress: 0,
-            service: service,
-            createdAt: new Date().toLocaleDateString(),
-          };
-
-          playAudio(newAudio);
-          setCurrentAudioId(null);
-        } else if (!status.success) {
-          clearInterval(pollInterval);
-          setLoading(false);
-          setCurrentAudioId(null);
-          console.error("Text to speech failed");
-        }
-      } catch (error) {
-        console.error("Error polling for audio status: " + error);
-        clearInterval(pollInterval);
-        setLoading(false);
-        setCurrentAudioId(null);
-      }
-    }, 500);
-
-    return () => {
-      clearInterval(pollInterval);
-    };
-  }, [
-    currentAudioId,
-    loading,
-    getSelectedVoice,
-    playAudio,
-    textContent,
-    service,
-  ]);
 
   const templateTexts = {
     "Narrate a story":
-      "Once upon a time in a forest shrouded in mist, a young adventurer discovered an ancient doorway hidden beneath twisted roots. As they reached out to touch the weathered stone, the forest fell silent. What secrets would be revealed beyond this mysterious threshold?",
+      "Di sebuah malam yang gelap gulita di tengah hutan pinus yang sunyi, langkah kaki misterius itu terdengar semakin dekat. Angin berbisik pelan, membawa hawa dingin yang menusuk tulang. Apa sebenarnya yang sedang mengintai dari balik bayangan kabut?",
     "Tell a silly joke":
-      "Why don't scientists trust atoms? Because they make up everything! Speaking of making things up, I once convinced my friend that the moon was just the back of the sun. He believed me until nighttime when both were visible in the sky.",
+      "Kenapa ayam kalau berkokok matanya merem? Soalnya dia udah hafal teksnya! Kalau belum hafal, pasti dia berkokok sambil baca contekan di pohon pisang.",
     "Record an advertisement":
-      "Introducing TranquilSleep, the revolutionary mattress designed with cutting-edge comfort technology. Experience the perfect balance of support and softness that adapts to your body. Wake up refreshed and energized every morning! Order now and get 30% off your first purchase.",
+      "Memperkenalkan wiuuulab Studio, platform AI Speech Synthesis terdepan dengan intonasi natural khas Indonesia. Ciptakan sulih suara profesional untuk YouTube, podcast, dan iklan Anda hanya dalam hitungan detik!",
     "Speak in different languages":
-      "Hello! Hola! Bonjour! Ciao! Konnichiwa! Guten Tag! I can help you communicate your message in multiple languages. Perfect for reaching a global audience or adding an international flair to your content.",
+      "Halo! Selamat datang di wiuuulab. Hello! Welcome to wiuuulab. We support multilingual natural voiceovers with authentic Indonesian accents and global languages seamlessly.",
     "Direct a dramatic movie scene":
-      "The rain beats against the windows as Sarah stares at the faded photograph. 'I never thought it would end this way,' she whispers, her voice barely audible above the storm. Behind her, the door slowly opens. 'It doesn't have to,' says a familiar voice she never expected to hear again.",
+      "Hujan deras mengguyur kaca jendela. 'Aku tidak pernah menyangka semuanya akan berakhir seperti ini,' bisiknya dengan napas tertahan. Tepat saat itu, pintu tua berderit terbuka perlahan...",
     "Hear from a video game character":
-      "Greetings, adventurer! I am Captain Varrick of the Starship Horizon. Our mission to explore the outer reaches of the Andromeda galaxy has led us to this mysterious planet. The energy readings are off the charts, and we need your help to investigate the ancient ruins ahead.",
+      "Prajurit, bersiaplah! Gerbang kegelapan telah terbuka dan kekuatan kuno mulai bangkit di lembah utara. Pegang senjatamu erat-erat, takdir dunia ada di tangan kita malam ini!",
     "Introduce your podcast":
-      "Welcome to 'Unexplained Phenomena,' the podcast where we explore the mysteries that science has yet to solve. I'm your host, Alex Morgan, and today we're diving into the fascinating world of synchronicity – those meaningful coincidences that seem to defy the laws of probability.",
+      "Halo semua, selamat datang di Cerita Tengah Malam. Bersama gue Alwi, malam ini kita bakal ngebahas kisah-kisah tak terpecahkan yang bikin merinding dari seluruh nusantara.",
     "Guide a meditation class":
-      "Settle into a comfortable position and gently close your eyes. Take a deep breath in through your nose, filling your lungs completely. Hold for a moment, and then exhale slowly through your mouth, releasing any tension you've been carrying. Feel your body becoming heavier with each breath, melting into the surface beneath you.",
+      "Tarik napas perlahan melalui hidung Anda... rasakan ketenangan mengisi setiap sudut pikiran. Hembuskan perlahan lewat mulut... lepaskan semua beban hari ini. Rasakan tubuh Anda menjadi lebih rileks dan damai.",
   };
 
   const handleButtonHover = (text: string) => {
@@ -116,48 +59,73 @@ export function TextToSpeechEditor({
   };
 
   const handleButtonClick = (text: string) => {
-    setTextContent(templateTexts[text as keyof typeof templateTexts]);
+    const textToInsert = templateTexts[text as keyof typeof templateTexts];
+    setTextContent(textToInsert);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
   };
 
   const handleGenerateSpeech = async () => {
     const selectedVoice = getSelectedVoice("styletts2");
+    const voiceId = selectedVoice?.id || "alwi";
 
-    if (textContent.trim().length === 0 || !selectedVoice) return;
+    if (textContent.trim().length === 0) {
+      toast.error("Silakan masukkan teks terlebih dahulu.");
+      return;
+    }
 
     try {
       setLoading(true);
-      const { audioId, shouldShowThrottleAlert } = await generateTextToSpeech(
-        textContent,
-        selectedVoice?.id,
-      );
+      const result = await generateTextToSpeech(textContent, voiceId);
 
-      if (shouldShowThrottleAlert) {
-        toast("Exceeding 3 requests per minute will queue your requests.", {
-          icon: "⏳",
-        });
+      if (result.success && result.audioUrl) {
+        const newAudio = {
+          id: result.audioId,
+          title:
+            textContent.substring(0, 50) +
+            (textContent.length > 50 ? "..." : ""),
+          audioUrl: result.audioUrl,
+          voice: voiceId,
+          duration: result.duration || "0:15",
+          progress: 0,
+          service: service,
+          createdAt: new Date().toLocaleDateString(),
+        };
+
+        playAudio(newAudio);
+        toast.success("Suara berhasil digenerate!");
       }
-
-      setCurrentAudioId(audioId);
     } catch (error) {
       console.error("Error generating speech: ", error);
+      toast.error(
+        error instanceof Error ? error.message : "Gagal mengenerate suara",
+      );
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <textarea
-        value={textContent}
-        onChange={(e) => setTextContent(e.target.value)}
-        placeholder={activePlaceholder}
-        disabled={loading}
-        className="w-full flex-grow resize-none rounded-lg bg-white p-4 placeholder:font-light placeholder:text-gray-500 focus:border-none focus:outline-none focus:ring-0"
-      />
+    <div className="flex h-full flex-col justify-between">
+      {/* Main Textarea */}
+      <div className="flex flex-grow flex-col">
+        <textarea
+          ref={textareaRef}
+          value={textContent}
+          onChange={(e) => setTextContent(e.target.value)}
+          placeholder={activePlaceholder}
+          disabled={loading}
+          rows={8}
+          className="w-full flex-grow resize-none rounded-xl bg-white p-4 text-base text-gray-800 placeholder:font-light placeholder:text-gray-400 focus:border-none focus:outline-none focus:ring-0"
+        />
 
-      <div className="mt-4 px-0 md:px-4">
-        {textContent.length === 0 ? (
-          <div className="mt-auto">
-            <p className="mb-2 text-sm text-gray-500">Get started with</p>
+        {/* Suggestion Template Pills (Visible when empty) */}
+        {textContent.length === 0 && (
+          <div className="my-3 px-2 md:px-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+              Coba teks template cepat:
+            </p>
 
             <div className="flex flex-wrap gap-2">
               {[
@@ -190,7 +158,8 @@ export function TextToSpeechEditor({
               ].map(({ text, icon }) => (
                 <button
                   key={text}
-                  className="flex items-center rounded-lg border border-gray-200 bg-white p-2 text-xs hover:bg-gray-50"
+                  type="button"
+                  className="flex items-center rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 shadow-sm transition hover:bg-gray-50 hover:border-gray-300"
                   onMouseEnter={() => handleButtonHover(text)}
                   onMouseLeave={() =>
                     setActivePlaceholder(
@@ -199,29 +168,33 @@ export function TextToSpeechEditor({
                   }
                   onClick={() => handleButtonClick(text)}
                 >
-                  <span className="mr-2 text-gray-500">{icon}</span>
+                  <span className="mr-1.5 text-gray-500">{icon}</span>
                   {text}
                 </button>
               ))}
             </div>
           </div>
-        ) : (
-          <GenerateButton
-            onGenerate={handleGenerateSpeech}
-            isDisabled={
-              textContent.length > 5000 ||
-              textContent.trim().length === 0 ||
-              loading
-            }
-            isLoading={loading}
-            showDownload={true}
-            creditsRemaining={credits}
-            showCredits={true}
-            characterCount={textContent.length}
-            characterLimit={5000}
-          />
         )}
       </div>
-    </>
+
+      {/* Bottom Action Bar: Always Visible ElevenLabs Controls */}
+      <div className="border-t border-gray-100 bg-white p-3 md:p-4">
+        <GenerateButton
+          onGenerate={handleGenerateSpeech}
+          isDisabled={
+            textContent.length > 5000 ||
+            textContent.trim().length === 0 ||
+            loading
+          }
+          isLoading={loading}
+          showDownload={true}
+          creditsRemaining={credits}
+          showCredits={true}
+          characterCount={textContent.length}
+          characterLimit={5000}
+          buttonText="Generate Speech"
+        />
+      </div>
+    </div>
   );
 }

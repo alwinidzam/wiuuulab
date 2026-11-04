@@ -80,13 +80,13 @@ model ApiKey {
 }
 
 model GeneratedAudioClip {
-    id  String @id @default(cuid())
-    userId  String
-    text    String?
-    voice   String
-    s3Key   String?
-    service String
-    failed  Boolean @default(false)
+    id        String   @id @default(cuid())
+    userId    String
+    text      String?
+    voice     String   @default("alwi")
+    s3Key     String?
+    service   String
+    failed    Boolean  @default(false)
     createdAt DateTime @default(now())
 
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)

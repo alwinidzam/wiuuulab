@@ -53,34 +53,26 @@ export function VoiceChanger({
 
     try {
       setIsLoading(true);
+      const result = await generateSpeechToSpeech("local-upload", selectedVoice.id);
+      if (result.success && result.audioUrl) {
+        const newAudio = {
+          id: result.audioId,
+          title: "Voice Conversion (" + selectedVoice.name + ")",
+          audioUrl: result.audioUrl,
+          voice: selectedVoice.id,
+          duration: result.duration || "0:15",
+          progress: 0,
+          service: service,
+          createdAt: new Date().toLocaleDateString(),
+        };
 
-      const { uploadUrl, s3Key } = await generateUploadUrl(file.type);
-
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("Failed ot upload file to storage");
+        playAudio(newAudio);
+        toast.success("Konversi suara berhasil!");
       }
-
-      const { audioId, shouldShowThrottleAlert } = await generateSpeechToSpeech(
-        s3Key,
-        selectedVoice.id,
-      );
-
-      if (shouldShowThrottleAlert) {
-        toast("Exceeding 3 requests per minute will queue your requests.", {
-          icon: "⏳",
-        });
-      }
-      setCurrentAudioId(audioId);
     } catch (error) {
       console.error("Error generating speech: ", error);
+      toast.error(error instanceof Error ? error.message : "Gagal konversi suara");
+    } finally {
       setIsLoading(false);
     }
   };

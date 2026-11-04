@@ -38,16 +38,30 @@ export function SoundEffectsGenerator({ credits }: { credits: number }) {
 
     try {
       setLoading(true);
-      const { audioId, shouldShowThrottleAlert } =
-        await generateSoundEffect(textContent);
-      if (shouldShowThrottleAlert) {
-        toast("Exceeding 3 requests per minute will queue your requests.", {
-          icon: "⏳",
-        });
+      const result = await generateSoundEffect(textContent);
+      if (result.success && result.audioUrl) {
+        const newAudio = {
+          id: result.audioId,
+          title:
+            textContent.substring(0, 50) +
+            (textContent.length > 50 ? "..." : ""),
+          audioUrl: result.audioUrl,
+          voice: "sound-fx",
+          duration: result.duration || "0:10",
+          progress: 0,
+          service: "make-an-audio",
+          createdAt: new Date().toLocaleDateString(),
+        };
+
+        playAudio(newAudio);
+        toast.success("Sound effect berhasil digenerate!");
       }
-      setCurrentAudioId(audioId);
     } catch (error) {
       console.error("Error generating sound effect: ", error);
+      toast.error(
+        error instanceof Error ? error.message : "Gagal generate sound effect",
+      );
+    } finally {
       setLoading(false);
     }
   };

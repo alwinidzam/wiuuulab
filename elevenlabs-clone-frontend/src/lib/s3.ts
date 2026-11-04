@@ -22,6 +22,15 @@ export const s3Client = new S3Client({
 });
 
 export async function getPresignedUrl({ key }: { key: string }) {
+  if (
+    key.startsWith("data:") ||
+    key.startsWith("http://") ||
+    key.startsWith("https://") ||
+    key.startsWith("/api/")
+  ) {
+    return key;
+  }
+
   const command = new GetObjectCommand({
     Bucket: env.S3_BUCKET_NAME,
     Key: key,

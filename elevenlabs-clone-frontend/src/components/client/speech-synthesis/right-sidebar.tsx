@@ -27,7 +27,7 @@ export function SpeechSidebar({
   const [searchQuery, setSearchQuery] = useState("");
 
   // ElevenLabs Voice Settings
-  const [selectedModel, setSelectedModel] = useState("eleven_multilingual_v2");
+  const [selectedModel, setSelectedModel] = useState("eleven_v4");
   const [stability, setStability] = useState(50);
   const [similarity, setSimilarity] = useState(75);
   const [styleExaggeration, setStyleExaggeration] = useState(0);
@@ -55,8 +55,14 @@ export function SpeechSidebar({
               onChange={(e) => setSelectedModel(e.target.value)}
               className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             >
+              <option value="eleven_v4">
+                Eleven v4 (Flagship Ultra-Fidelity • 90+ Languages)
+              </option>
+              <option value="eleven_v4_turbo">
+                Eleven v4 Turbo (Low Latency Realtime)
+              </option>
               <option value="eleven_multilingual_v2">
-                Eleven Multilingual v2 (High Quality)
+                Eleven Multilingual v2 (Studio Quality)
               </option>
               <option value="eleven_turbo_v2_5">
                 Eleven Turbo v2.5 (Low Latency)

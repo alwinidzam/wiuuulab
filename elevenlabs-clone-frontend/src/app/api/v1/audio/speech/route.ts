@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { env } from "~/env";
+import { synthesizeSpeechDirect } from "~/lib/tts-engine";
 import { validateApiKey } from "~/server/api-auth";
 import { db } from "~/server/db";
 
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
   const { user } = authResult;
 
-  let body: { input?: string; text?: string; voice?: string; model?: string };
+  let body: { input?: string; text?: string; voice?: string; speed?: number };
   try {
     body = await request.json();
   } catch {
@@ -26,58 +26,30 @@ export async function POST(request: NextRequest) {
   const voice = body.voice || "alwi";
 
   try {
-    const backendRes = await fetch(env.STYLETTS2_API_ROUTE + "/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: env.BACKEND_API_KEY,
-      },
-      body: JSON.stringify({
-        text,
-        target_voice: voice,
-      }),
+    const { buffer, dataUrl } = await synthesizeSpeechDirect(text, voice, {
+      speed: body.speed,
     });
 
-    if (!backendRes.ok) {
-      const errText = await backendRes.text();
-      return Response.json(
-        { error: `Backend synthesis error: ${backendRes.statusText}`, detail: errText },
-        { status: backendRes.status }
-      );
-    }
-
-    const { audio_url, s3_key } = (await backendRes.json()) as {
-      audio_url: string;
-      s3_key: string;
-    };
-
-    // 100% Free - Save clip history without deducting credits
+    // Save clip history (100% Free & Unlimited)
     await db.generatedAudioClip.create({
       data: {
         userId: user.id,
         text,
         voice,
-        s3Key: s3_key,
+        s3Key: dataUrl,
         service: "styletts2",
+        failed: false,
       },
     });
 
-    const audioStreamRes = await fetch(audio_url);
-    if (!audioStreamRes.ok) {
-      return Response.json({ error: "Failed to download generated audio" }, { status: 502 });
-    }
-
-    const audioBuffer = await audioStreamRes.arrayBuffer();
-    const contentType = audio_url.endsWith(".mp3") ? "audio/mpeg" : "audio/wav";
-
-    return new Response(audioBuffer, {
+    return new Response(buffer, {
       headers: {
-        "Content-Type": contentType,
-        "Content-Length": audioBuffer.byteLength.toString(),
-        "X-Accel-Buffering": "no",
+        "Content-Type": "audio/mpeg",
+        "Content-Length": buffer.length.toString(),
       },
     });
   } catch (error: any) {
+    console.error("OpenAI Audio TTS synthesis error:", error);
     return Response.json(
       { error: "Internal generation error", detail: error?.message },
       { status: 500 }
