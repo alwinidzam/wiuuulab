@@ -8,24 +8,26 @@ export function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  const isAuthRoute = path === "/app/sign-in" || path === "/app/sign-up";
-  const isProtectedRoute = path.startsWith("/app/") && !isAuthRoute;
+  // Pendaftaran dinonaktifkan untuk penggunaan pribadi
+  if (path === "/app/sign-up") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
-  if (sessionToken && isAuthRoute) {
+  // Jika sudah login, akses ke root / atau /app/sign-in langsung dialihkan ke studio
+  if (sessionToken && (path === "/" || path === "/app/sign-in")) {
     return NextResponse.redirect(
       new URL("/app/speech-synthesis/text-to-speech", request.url),
     );
   }
 
-  if (!sessionToken && isProtectedRoute) {
-    const signInUrl = new URL("/app/sign-in", request.url);
-    signInUrl.searchParams.set("callbackUrl", request.url);
-    return NextResponse.redirect(signInUrl);
+  // Jika belum login dan membuka rute studio /app/*, alihkan langsung ke halaman login (/)
+  if (!sessionToken && path.startsWith("/app/") && path !== "/app/sign-in") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/app/:path*"],
+  matcher: ["/", "/app/:path*"],
 };
