@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { analyzeContext, type ContextAnalysisResult } from "./context-engine";
 
@@ -294,6 +296,66 @@ export function getVoiceConfig(
     };
   }
 
+  if (key.includes("george")) {
+    // George: Warm Storyteller (Measured F0: 132Hz, Centroid: 2215Hz)
+    const baseRate = -4 + cRate;
+    const basePitch = -2 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
+    return {
+      voiceId: "en-US-ChristopherNeural",
+      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+    };
+  }
+
+  if (key.includes("jessica")) {
+    // Jessica: Playful & Bright (Measured F0: 207Hz, Centroid: 2560Hz)
+    const baseRate = 4 + cRate;
+    const basePitch = 3 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
+    return {
+      voiceId: "en-US-JennyNeural",
+      rate: `+${rateVal}%`,
+      pitch: `+${basePitch}Hz`,
+    };
+  }
+
+  if (key.includes("brian")) {
+    // Brian: Conversational Narrator (Measured F0: 120Hz, Centroid: 2366Hz)
+    const baseRate = -2 + cRate;
+    const basePitch = -1 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
+    return {
+      voiceId: "en-US-BrianMultilingualNeural",
+      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+    };
+  }
+
+  if (key.includes("sarah")) {
+    // Sarah: Reassuring Confident Female Narrator
+    const baseRate = -2 + cRate;
+    const basePitch = 0 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
+    return {
+      voiceId: "en-US-AvaMultilingualNeural",
+      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+    };
+  }
+
+  if (key.includes("bella")) {
+    // Bella: Soft & Warm Intimate Narration
+    const baseRate = -6 + cRate;
+    const basePitch = -1 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
+    return {
+      voiceId: "en-US-EmmaMultilingualNeural",
+      rate: `${rateVal}%`,
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+    };
+  }
+
   // Default: Athalea Sendu Register Dada
   const rateVal = Math.round(-14 * speedMultiplier);
   return {
@@ -303,27 +365,89 @@ export function getVoiceConfig(
   };
 }
 
-// Master acoustic reference profiles for Zero-Shot Hugging Face Voice Cloning (Permanent Hosted Dataset)
-export const HF_VOICE_REFERENCES: Record<string, { audioUrl: string; refText: string }> = {
+// Master acoustic reference profiles for Zero-Shot Hugging Face Voice Cloning (Permanent Hosted Dataset & Local Ground Truth)
+export interface MasterVoiceReference {
+  localPaths: string[];
+  audioUrl: string;
+  refText: string;
+}
+
+export const HF_VOICE_REFERENCES: Record<string, MasterVoiceReference> = {
   athalea: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_athalea_test.mp3"),
+      path.resolve("c:/elevenlab feels/SAMPLE/athalea_ref.mp3"),
+      path.resolve("public/samples/SAMPLE_athalea_test.mp3"),
+      path.resolve("public/athalea_ref.mp3"),
+    ],
     audioUrl: "https://wiuuulab.vercel.app/athalea_ref.mp3",
-    refText: "Mari berkelana tanpa rencana. Biarkan semesta menuntun langkah kita.",
+    refText: "Halo, selamat datang di wiuuulab.",
   },
   serena: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_serena_test.mp3"),
+      path.resolve("c:/elevenlab feels/SAMPLE/serena_sample.mp3"),
+      path.resolve("public/samples/SAMPLE_serena_test.mp3"),
+    ],
     audioUrl: "https://huggingface.co/datasets/qomariyahyahyah/wiuuulab-voice-samples/resolve/main/serena_heartfelt.mp3",
-    refText: "Serena is a warm, gentle, and naturally expressive Indonesian voice.",
+    refText: "Ini adalah pengujian karakter suara Serena di wiuuulab.",
+  },
+  alwi: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_alwi_test.mp3"),
+      path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_alwi_cinematic_story.mp3"),
+      path.resolve("public/samples/SAMPLE_alwi_test.mp3"),
+    ],
+    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/workspace/b37b4a30a50c4bce9072baf7a58b4ce3/voices/R86jddkroI9bJwXFfjsr/RU276gZwjPct6bovaSJY.mp3",
+    refText: "Ini adalah pengujian karakter suara Alwi di wiuuulab.",
   },
   ongky: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/ongky_himawan_official.mp3"),
+      path.resolve("public/samples/ongky_himawan_official.mp3"),
+    ],
     audioUrl: "https://huggingface.co/datasets/qomariyahyahyah/wiuuulab-voice-samples/resolve/main/ongky_himawan.mp3",
-    refText: "A deep, calm, and resonant male voice with a confident tone.",
+    refText: "Ini adalah karakter suara Ongky Himawan.",
   },
   bowo: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/bowo_hoarse_official.mp3"),
+      path.resolve("public/samples/bowo_hoarse_official.mp3"),
+    ],
     audioUrl: "https://huggingface.co/datasets/qomariyahyahyah/wiuuulab-voice-samples/resolve/main/bowo_hoarse.mp3",
-    refText: "A hoarse, deep voice to create a frightening and menacing impression.",
+    refText: "Ini adalah karakter suara Bowo.",
+  },
+  brian: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_brian_test.mp3"),
+      path.resolve("public/samples/SAMPLE_brian_test.mp3"),
+    ],
+    audioUrl: "https://wiuuulab.vercel.app/samples/SAMPLE_brian_test.mp3",
+    refText: "Ini adalah pengujian karakter suara Brian di wiuuulab.",
+  },
+  george: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_george_demokrasi.mp3"),
+      path.resolve("public/samples/SAMPLE_george_demokrasi.mp3"),
+    ],
+    audioUrl: "https://wiuuulab.vercel.app/samples/SAMPLE_george_demokrasi.mp3",
+    refText: "Dalam praktik demokrasi Pancasila kebebasan berpendapat adalah hak mendasar yang harus dijaga bersama demi keadilan seluruh rakyat.",
+  },
+  jessica: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_jessica_playful.mp3"),
+      path.resolve("public/samples/SAMPLE_jessica_playful.mp3"),
+    ],
+    audioUrl: "https://wiuuulab.vercel.app/samples/SAMPLE_jessica_playful.mp3",
+    refText: "Halo semua! Hari ini kita akan membahas sesuatu yang sangat seru dan menyenangkan.",
   },
   adam: {
+    localPaths: [
+      path.resolve("c:/elevenlab feels/SAMPLE/adam_deep_official.mp3"),
+      path.resolve("public/samples/adam_deep_official.mp3"),
+    ],
     audioUrl: "https://huggingface.co/datasets/qomariyahyahyah/wiuuulab-voice-samples/resolve/main/adam_baritone.mp3",
-    refText: "Adam is a distinct, deep, and engaging American baritone narrator.",
+    refText: "This is Adam speaking with a distinct, deep, and engaging American baritone voice.",
   },
 };
 
@@ -333,7 +457,19 @@ export async function synthesizeZeroShotHF(
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string } | null> {
   const token = process.env.HF_TOKEN;
   const key = voiceKey.toLowerCase();
-  const ref = HF_VOICE_REFERENCES[key] || HF_VOICE_REFERENCES.serena;
+  
+  // Find matching reference profile
+  let refKey = "athalea";
+  if (key.includes("serena")) refKey = "serena";
+  else if (key.includes("alwi")) refKey = "alwi";
+  else if (key.includes("ongky")) refKey = "ongky";
+  else if (key.includes("bowo")) refKey = "bowo";
+  else if (key.includes("brian")) refKey = "brian";
+  else if (key.includes("george")) refKey = "george";
+  else if (key.includes("jessica")) refKey = "jessica";
+  else if (key.includes("adam")) refKey = "adam";
+  
+  const ref = HF_VOICE_REFERENCES[refKey] || HF_VOICE_REFERENCES.athalea;
 
   try {
     const { Client, handle_file } = await import("@gradio/client");
@@ -343,8 +479,21 @@ export async function synthesizeZeroShotHF(
     }
     const app = await Client.connect("mrfakename/E2-F5-TTS", connectOptions);
 
+    let audioHandle: any;
+    let localFound = false;
+    for (const p of ref.localPaths) {
+      if (fs.existsSync(p)) {
+        audioHandle = handle_file(p);
+        localFound = true;
+        break;
+      }
+    }
+    if (!localFound) {
+      audioHandle = handle_file(ref.audioUrl);
+    }
+
     const result = await app.predict("/predict", {
-      ref_audio: handle_file(ref.audioUrl),
+      ref_audio: audioHandle,
       ref_text: ref.refText,
       gen_text: text,
       remove_silence: false,
@@ -370,7 +519,7 @@ export async function synthesizeZeroShotHF(
       }
     }
   } catch (err: any) {
-    console.warn("Hugging Face Zero-Shot F5-TTS unavailable, continuing to resilient multi-neural engine:", err?.message || err);
+    console.warn(`Hugging Face Zero-Shot F5-TTS fallback for ${voiceKey}:`, err?.message || err);
   }
   return null;
 }
