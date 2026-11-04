@@ -37,7 +37,6 @@ export function PageLayout({
   const {
     isMobileDrawerOpen,
     isMobileScreen,
-    isMobileMenuOpen,
     toggleMobileDrawer,
     setMobileScreen,
     toggleMobileMenu,
@@ -48,79 +47,115 @@ export function PageLayout({
     const checkScreenSize = () => {
       setMobileScreen(window.innerWidth < 1024);
     };
+    checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
   }, [setMobileScreen]);
 
   return (
-    <div className="flex h-screen">
-      <div className="hidden lg:block">
+    <div className="flex h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-sky-100 selection:text-sky-900 overflow-hidden">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block z-30">
         <Sidebar />
       </div>
 
+      {/* Mobile Backdrop */}
       {isMobileScreen && isMobileDrawerOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50" />
+        <div
+          onClick={toggleMobileDrawer}
+          className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-sm transition-opacity"
+        />
       )}
 
+      {/* Mobile Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+          isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        <div className="shadow-log relative h-full w-64 bg-white">
+        <div className="relative h-full w-64 bg-white shadow-2xl">
           <button
             onClick={toggleMobileDrawer}
-            className="absolute right-2 top-2 rounded-full p-2 text-gray-500 hover:bg-gray-100"
+            className="absolute right-3 top-3 rounded-full p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
-            <IoClose />
+            <IoClose className="text-lg" />
           </button>
           <Sidebar isMobile={true} />
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="border-b border-gray-200">
-          <div className="flex h-16 items-center px-4">
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col overflow-hidden relative">
+        {/* Apple HIG Top Bar with Frosted Liquid Glass */}
+        <header className="liquid-glass border-b border-white/80 sticky top-0 z-20 px-6 h-16 flex items-center justify-between shadow-xs">
+          <div className="flex items-center space-x-3">
             {isMobileScreen && (
               <button
                 onClick={toggleMobileDrawer}
-                className="mr-3 rounded-lg hover:bg-gray-100 lg:hidden"
+                className="mr-2 rounded-xl p-2 text-slate-600 hover:bg-sky-50 hover:text-sky-700 transition-colors lg:hidden"
               >
-                <IoMenu className="h-6 w-6" />
+                <IoMenu className="h-5 w-5" />
               </button>
             )}
-            <h1 className="text-md font-semibold">{title}</h1>
+            <h1 className="text-base font-bold tracking-tight text-slate-900">
+              {title}
+            </h1>
 
+            {/* Apple HIG Segmented Tab Pills */}
             {tabs && tabs.length > 0 && (
-              <div className="ml-4 flex items-center">
-                {tabs.map((tab) => (
-                  <Link
-                    className={`mr-2 rounded-full px-3 py-1 text-sm transition-colors duration-200 ${pathname === tab.path ? "bg-black text-white" : "text-gray-500 hover:text-gray-700"}`}
-                    key={tab.path}
-                    href={tab.path}
-                  >
-                    {tab.name}
-                  </Link>
-                ))}
+              <div className="ml-4 flex items-center gap-1.5 p-1 rounded-full bg-slate-100/80 border border-slate-200/60 shadow-inner">
+                {tabs.map((tab) => {
+                  const isActive = pathname === tab.path;
+                  return (
+                    <Link
+                      key={tab.path}
+                      href={tab.path}
+                      className={`px-3.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
+                        isActive
+                          ? "liquid-glass-active shadow-sm"
+                          : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
+                      }`}
+                    >
+                      {tab.name}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
-        </div>
 
-        <div className="flex-1 overflow-auto">
+          <div className="flex items-center space-x-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-50 border border-sky-200/80 text-[11px] font-semibold text-sky-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+              Neural v4
+            </span>
+          </div>
+        </header>
+
+        {/* Studio Workspace Content */}
+        <div className="flex-1 overflow-auto bg-[#f8fafc] relative">
+          {/* Subtle Ambient Glow Orb */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-sky-100/40 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
           <div className="flex h-full">
-            <div className="flex-1 px-6 py-5">
-              <div className="flex h-full flex-col">{children}</div>
-            </div>
+            <main className="flex-1 px-6 py-6 overflow-y-auto">
+              <div className="flex h-full flex-col max-w-5xl mx-auto">{children}</div>
+            </main>
 
             {showSidebar && service && (
-              <SpeechSidebar historyItems={historyItems} service={service} />
+              <aside className="w-80 border-l border-slate-200/80 bg-white/70 backdrop-blur-xl hidden xl:block overflow-y-auto">
+                <SpeechSidebar historyItems={historyItems} service={service} />
+              </aside>
             )}
           </div>
         </div>
 
+        {/* Mobile Settings Button */}
         {isMobileScreen && !pathname.includes("/app/sound-effects") && (
           <MobileSettingsButton toggleMobileMenu={toggleMobileMenu} />
         )}
 
+        {/* Floating Playbar */}
         {currentAudio && <Playbar />}
       </div>
     </div>

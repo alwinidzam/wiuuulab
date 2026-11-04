@@ -1,5 +1,3 @@
-import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
-
 // Indonesian Slang & Colloquial Normalizer (Jaksel, Casual, Social Media)
 const INDONESIAN_CASUAL_MAP: [RegExp, string][] = [
   [/\bbgt\b/gi, "banget"],

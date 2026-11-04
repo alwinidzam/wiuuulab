@@ -1,12 +1,10 @@
 "use client";
 
-import { doesNotMatch } from "assert";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaUpload } from "react-icons/fa";
 import {
   generateSpeechToSpeech,
-  generateUploadUrl,
   generationStatus,
 } from "~/actions/generate-speech";
 import { GenerateButton } from "~/components/client/generate-button";
@@ -40,8 +38,8 @@ export function VoiceChanger({
     } else {
       alert(
         isAllowedAudio
-          ? "File is too large. Max size is 50MB"
-          : "Please select an MP3 or WAV file only",
+          ? "Ukuran file terlalu besar. Maksimal 50MB."
+          : "Hanya mendukung file audio MP3 atau WAV.",
       );
     }
   };
@@ -68,6 +66,8 @@ export function VoiceChanger({
 
         playAudio(newAudio);
         toast.success("Konversi suara berhasil!");
+      } else {
+        toast.error(result.error || "Gagal konversi suara.");
       }
     } catch (error) {
       console.error("Error generating speech: ", error);
@@ -121,91 +121,98 @@ export function VoiceChanger({
     return () => {
       clearInterval(pollInterval);
     };
-  }, [currentAudioId, isLoading, getSelectedVoice, playAudio, file]);
+  }, [currentAudioId, isLoading, getSelectedVoice, playAudio, file, service]);
 
   return (
-    <>
-      <div className="flex flex-1 flex-col justify-between px-4">
-        <div className="flex flex-1 items-center justify-center py-8">
-          <div
-            className={`w-full max-w-xl rounded-2xl border-2 border-dotted p-8 transition-all duration-200 ${isDragging ? "border-blue-400 bg-blue-50" : "border-gray-300"} ${file ? "bg-white" : "bg-gray-50"}`}
-            onDragOver={() => setIsDragging(true)}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={(e) => {
-              setIsDragging(false);
+    <div className="flex h-full flex-col justify-between rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl shadow-sm overflow-hidden p-6 sm:p-8">
+      <div className="flex flex-1 items-center justify-center py-6">
+        <div
+          className={`w-full max-w-xl rounded-3xl border-2 border-dashed p-10 text-center transition-all duration-200 cursor-pointer ${
+            isDragging
+              ? "border-sky-400 bg-sky-50/80"
+              : "border-slate-300/80 hover:border-sky-300 hover:bg-sky-50/30"
+          } ${file ? "bg-white shadow-sm border-sky-200" : "bg-white/60"}`}
+          onDragOver={() => setIsDragging(true)}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
 
-              if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                  handleFileSelect(file);
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              const droppedFile = e.dataTransfer.files[0];
+              if (droppedFile) {
+                handleFileSelect(droppedFile);
+              }
+            }
+          }}
+          onClick={() => {
+            if (isLoading) return;
+
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "audio/mp3,audio/wav";
+            input.onchange = (e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.files && target.files.length > 0) {
+                const selected = target.files[0];
+                if (selected) {
+                  handleFileSelect(selected);
                 }
               }
-            }}
-            onClick={() => {
-              if (isLoading) return;
-
-              const input = document.createElement("input");
-              input.type = "file";
-              input.accept = "audio/mp3,audio/wav";
-              input.onchange = (e) => {
-                const target = e.target as HTMLInputElement;
-                if (target.files && target.files.length > 0) {
-                  const file = target.files[0];
-                  if (file) {
-                    handleFileSelect(file);
+            };
+            input.click();
+          }}
+        >
+          {file ? (
+            <div className="flex flex-col items-center">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 border border-sky-100 text-sky-600 shadow-xs">
+                <FaUpload className="h-5 w-5" />
+              </div>
+              <p className="mb-1 text-sm font-bold text-slate-800">{file.name}</p>
+              <p className="mb-2 text-xs font-mono text-slate-400">
+                {(file.size / (1024 * 1024)).toFixed(2)} MB
+              </p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isLoading) {
+                    setFile(null);
                   }
-                }
-              };
-              input.click();
-            }}
-          >
-            {file ? (
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-4 rounded-lg border border-gray-200 bg-white p-3">
-                  <FaUpload className="h-4 w-4 text-blue-400" />
-                </div>
-                <p className="mb-1 text-sm font-medium">{file.name}</p>
-                <p className="mb-1 text-sm font-medium">
-                  {(file.size / (1024 * 1024)).toFixed(2)} MB
-                </p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isLoading) {
-                      setFile(null);
-                    }
-                  }}
-                  disabled={isLoading}
-                  className={`mt-2 text-sm ${isLoading ? "cursor-not-allowed text-gray-400" : "text-blue-600 hover:text-blue-800"}`}
-                >
-                  Choose a different file
-                </button>
+                }}
+                disabled={isLoading}
+                className={`text-xs font-semibold ${
+                  isLoading ? "cursor-not-allowed text-slate-400" : "text-sky-600 hover:text-sky-800"
+                }`}
+              >
+                Ganti file audio
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 shadow-xs">
+                <FaUpload className="h-5 w-5" />
               </div>
-            ) : (
-              <div className="flex cursor-pointer flex-col items-center py-8 text-center">
-                <div className="mb-4 rounded-lg border border-gray-200 bg-white p-3">
-                  <FaUpload className="h-4 w-4 text-gray-500" />
-                </div>
-                <p className="mb-1 text-sm font-medium">
-                  Click to upload, or drag and drop
-                </p>
-                <p className="text-xs text-gray-500">
-                  MP3 or WAV files only, up to 50MB
-                </p>
-              </div>
-            )}
-          </div>
+              <p className="mb-1.5 text-sm font-bold text-slate-800">
+                Klik untuk unggah atau seret file audio kemari
+              </p>
+              <p className="text-xs text-slate-400 font-normal">
+                Format audio MP3 atau WAV, ukuran maksimal hingga 50MB
+              </p>
+            </div>
+          )}
         </div>
+      </div>
 
+      <div className="pt-4 border-t border-slate-100/90">
         <GenerateButton
           onGenerate={handleGenerateSpeech}
           isDisabled={!file || isLoading}
           isLoading={isLoading}
           showDownload={true}
           creditsRemaining={credits}
-          buttonText="Convert Voice"
+          buttonText="Konversi Suara (Voice Changer)"
         />
       </div>
-    </>
+    </div>
   );
 }

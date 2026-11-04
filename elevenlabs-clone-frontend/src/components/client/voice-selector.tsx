@@ -37,40 +37,42 @@ export function VoiceSelector({ service }: { service: ServiceType }) {
     <div className="relative" ref={dropdownRef}>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2 hover:cursor-pointer hover:bg-gray-100 hover:bg-opacity-30"
+        className="flex items-center justify-between rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-md px-3.5 py-2.5 hover:cursor-pointer hover:bg-sky-50/60 hover:border-sky-300 transition-all shadow-xs"
       >
         <div className="flex items-center">
           <div
-            className="relative mr-2.5 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full"
+            className="relative mr-2.5 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full shadow-xs"
             style={{ background: selectedVoice?.gradientColors }}
           ></div>
-          <span className="text-sm">
-            {selectedVoice?.name ?? "No voice selected"}
+          <span className="text-xs font-semibold text-slate-800">
+            {selectedVoice?.name ?? "Pilih karakter suara"}
           </span>
         </div>
         {isOpen ? (
-          <IoChevronUp className="h-4 w-4 text-gray-400" />
+          <IoChevronUp className="h-4 w-4 text-sky-600" />
         ) : (
-          <IoChevronDown className="h-4 w-4 text-gray-400" />
+          <IoChevronDown className="h-4 w-4 text-slate-400" />
         )}
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 z-10 mt-1 max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 right-0 z-30 mt-1.5 max-h-60 overflow-auto rounded-2xl border border-slate-200/90 bg-white/95 backdrop-blur-xl p-1.5 shadow-xl">
           {voices.map((voice) => (
             <div
               key={voice.id}
-              className={`flex items-center px-3 py-2 hover:cursor-pointer hover:bg-gray-100 ${voice.id === selectedVoice?.id ? "bg-gray-50" : ""}`}
+              className={`flex items-center rounded-xl px-3 py-2 hover:cursor-pointer hover:bg-sky-50 transition-colors ${
+                voice.id === selectedVoice?.id ? "bg-sky-50/80 text-sky-800 font-semibold" : "text-slate-700"
+              }`}
               onClick={() => {
                 selectVoice(service, voice.id);
                 setIsOpen(false);
               }}
             >
               <div
-                className="relative mr-2 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full"
+                className="relative mr-2.5 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full shadow-xs"
                 style={{ background: voice.gradientColors }}
               />
-              <span className="text-sm">{voice.name}</span>
+              <span className="text-xs">{voice.name}</span>
             </div>
           ))}
         </div>

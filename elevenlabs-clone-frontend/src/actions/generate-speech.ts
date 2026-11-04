@@ -12,19 +12,26 @@ export async function generateTextToSpeech(
   options?: { stability?: number; speed?: number },
 ) {
   const session = await auth();
-  if (!session?.user.id) {
-    throw new Error("User not authenticated");
+  if (!session?.user?.id) {
+    return {
+      audioId: "",
+      audioUrl: null,
+      duration: "0:00",
+      success: false,
+      error: "Sesi login kedaluwarsa. Silakan masuk kembali.",
+      shouldShowThrottleAlert: false,
+    };
   }
 
   try {
-    // 1. Direct High-Fidelity Neural Synthesis (Alwi, Athalea, Indonesian & Global)
+    // 1. Direct High-Fidelity Neural Synthesis (Alwi, Athalea, Serena, Indonesian & Global)
     const { dataUrl, durationEstimate } = await synthesizeSpeechDirect(
       text,
       voice,
       options,
     );
 
-    // 2. Save to Neon PostgreSQL history (100% Free & Unlimited)
+    // 2. Save to Neon PostgreSQL history
     const audioClipJob = await db.generatedAudioClip.create({
       data: {
         text: text,
@@ -52,24 +59,39 @@ export async function generateTextToSpeech(
   } catch (error) {
     console.error("Text to speech synthesis error:", error);
 
-    // Create record marked as failed
-    const failedJob = await db.generatedAudioClip.create({
-      data: {
-        text: text,
-        voice: voice,
-        user: {
-          connect: {
-            id: session.user.id,
+    try {
+      const failedJob = await db.generatedAudioClip.create({
+        data: {
+          text: text,
+          voice: voice,
+          user: {
+            connect: {
+              id: session.user.id,
+            },
           },
+          service: "styletts2",
+          failed: true,
         },
-        service: "styletts2",
-        failed: true,
-      },
-    });
+      });
 
-    throw new Error(
-      error instanceof Error ? error.message : "Voice synthesis failed",
-    );
+      return {
+        audioId: failedJob.id,
+        audioUrl: null,
+        duration: "0:00",
+        success: false,
+        error: error instanceof Error ? error.message : "Sintesis suara gagal.",
+        shouldShowThrottleAlert: false,
+      };
+    } catch {
+      return {
+        audioId: "",
+        audioUrl: null,
+        duration: "0:00",
+        success: false,
+        error: error instanceof Error ? error.message : "Sintesis suara gagal.",
+        shouldShowThrottleAlert: false,
+      };
+    }
   }
 }
 
@@ -78,43 +100,61 @@ export async function generateSpeechToSpeech(
   voice: string,
 ) {
   const session = await auth();
-  if (!session?.user.id) {
-    throw new Error("User not authenticated");
+  if (!session?.user?.id) {
+    return {
+      audioId: "",
+      audioUrl: null,
+      duration: "0:00",
+      success: false,
+      error: "Sesi login kedaluwarsa. Silakan masuk kembali.",
+      shouldShowThrottleAlert: false,
+    };
   }
 
-  // Voice conversion using neural speech synthesis
-  const sampleText =
-    "Ini adalah hasil konversi suara menggunakan studio wiuuulab.";
-  const { dataUrl, durationEstimate } = await synthesizeSpeechDirect(
-    sampleText,
-    voice,
-  );
+  try {
+    const sampleText =
+      "Ini adalah hasil konversi suara menggunakan studio wiuuulab.";
+    const { dataUrl, durationEstimate } = await synthesizeSpeechDirect(
+      sampleText,
+      voice,
+    );
 
-  const audioClipJob = await db.generatedAudioClip.create({
-    data: {
-      originalVoiceS3Key: originalVoiceS3Key,
-      voice: voice,
-      text: "Converted Voice Sample",
-      user: {
-        connect: {
-          id: session.user.id,
+    const audioClipJob = await db.generatedAudioClip.create({
+      data: {
+        originalVoiceS3Key: originalVoiceS3Key,
+        voice: voice,
+        text: "Converted Voice Sample",
+        user: {
+          connect: {
+            id: session.user.id,
+          },
         },
+        service: "seedvc",
+        s3Key: dataUrl,
+        failed: false,
       },
-      service: "seedvc",
-      s3Key: dataUrl,
-      failed: false,
-    },
-  });
+    });
 
-  revalidateBasedOnService("seedvc");
+    revalidateBasedOnService("seedvc");
 
-  return {
-    audioId: audioClipJob.id,
-    audioUrl: dataUrl,
-    duration: durationEstimate,
-    success: true,
-    shouldShowThrottleAlert: false,
-  };
+    return {
+      audioId: audioClipJob.id,
+      audioUrl: dataUrl,
+      duration: durationEstimate,
+      success: true,
+      shouldShowThrottleAlert: false,
+    };
+  } catch (error) {
+    console.error("Speech to speech error:", error);
+    return {
+      audioId: "",
+      audioUrl: null,
+      duration: "0:00",
+      success: false,
+      error: error instanceof Error ? error.message : "Gagal konversi suara.",
+      shouldShowThrottleAlert: false,
+    };
+  }
 }
 
 export async function generateSoundEffect(
@@ -122,39 +162,58 @@ export async function generateSoundEffect(
   options?: { duration_seconds?: number; prompt_influence?: number },
 ) {
   const session = await auth();
-  if (!session?.user.id) {
-    throw new Error("User not authenticated");
+  if (!session?.user?.id) {
+    return {
+      audioId: "",
+      audioUrl: null,
+      duration: "0:00",
+      success: false,
+      error: "Sesi login kedaluwarsa. Silakan masuk kembali.",
+      shouldShowThrottleAlert: false,
+    };
   }
 
-  const { dataUrl, durationEstimate } = await synthesizeSoundEffect(
-    prompt,
-    options,
-  );
+  try {
+    const { dataUrl, durationEstimate } = await synthesizeSoundEffect(
+      prompt,
+      options,
+    );
 
-  const audioClipJob = await db.generatedAudioClip.create({
-    data: {
-      text: prompt,
-      user: {
-        connect: {
-          id: session.user.id,
+    const audioClipJob = await db.generatedAudioClip.create({
+      data: {
+        text: prompt,
+        user: {
+          connect: {
+            id: session.user.id,
+          },
         },
+        service: "make-an-audio",
+        voice: "sound-fx",
+        s3Key: dataUrl,
+        failed: false,
       },
-      service: "make-an-audio",
-      voice: "sound-fx",
-      s3Key: dataUrl,
-      failed: false,
-    },
-  });
+    });
 
-  revalidateBasedOnService("make-an-audio");
+    revalidateBasedOnService("make-an-audio");
 
-  return {
-    audioId: audioClipJob.id,
-    audioUrl: dataUrl,
-    duration: durationEstimate,
-    success: true,
-    shouldShowThrottleAlert: false,
-  };
+    return {
+      audioId: audioClipJob.id,
+      audioUrl: dataUrl,
+      duration: durationEstimate,
+      success: true,
+      shouldShowThrottleAlert: false,
+    };
+  } catch (error) {
+    console.error("Sound effect generation error:", error);
+    return {
+      audioId: "",
+      audioUrl: null,
+      duration: "0:00",
+      success: false,
+      error: error instanceof Error ? error.message : "Gagal generate sound effect.",
+      shouldShowThrottleAlert: false,
+    };
+  }
 }
 
 export async function generationStatus(
@@ -163,7 +222,7 @@ export async function generationStatus(
   const session = await auth();
 
   const audioClip = await db.generatedAudioClip.findFirst({
-    where: { id: audioId, userId: session?.user.id },
+    where: { id: audioId, userId: session?.user?.id },
     select: {
       id: true,
       failed: true,
@@ -202,7 +261,7 @@ const revalidateBasedOnService = (service: ServiceType) => {
 
 export async function generateUploadUrl(fileType: string) {
   const session = await auth();
-  if (!session?.user.id) {
+  if (!session?.user?.id) {
     throw new Error("User not authenticated");
   }
 

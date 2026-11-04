@@ -84,21 +84,21 @@ export default function Playbar() {
       {!isPlaybarOpen && (
         <div
           onClick={togglePlaybar}
-          className="absolute bottom-2 left-1/2 z-10 -translate-x-1/2 transform cursor-pointer"
+          className="absolute bottom-2 left-1/2 z-20 -translate-x-1/2 transform cursor-pointer"
         >
-          <div className="flex h-1 w-96 items-center rounded-full bg-gray-300">
+          <div className="flex h-1.5 w-96 items-center rounded-full bg-slate-200/80 backdrop-blur-md shadow-xs">
             <div
-              className="h-1 rounded-full bg-black"
+              className="h-1.5 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 transition-all duration-150"
               style={{ width: `${progress === 0 ? 100 : progress}%` }}
             ></div>
           </div>
         </div>
       )}
 
-      <div className={`relative border-t border-gray-200 bg-white shadow-md`}>
-        <div className="absolute left-0 top-0 h-0.5 w-full bg-gray-200 md:hidden">
+      <div className={`relative border-t border-white/80 liquid-glass shadow-lg z-20`}>
+        <div className="absolute left-0 top-0 h-1 w-full bg-sky-100 md:hidden">
           <div
-            className="absolute h-0.5 bg-black"
+            className="absolute h-1 bg-gradient-to-r from-sky-500 to-blue-600 transition-all duration-150"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -109,30 +109,30 @@ export default function Playbar() {
             height: isPlaybarOpen ? "80px" : "0px",
           }}
         >
-          <div className="hidden h-full md:grid md:grid-cols-[25%_50%_25%]">
+          <div className="hidden h-full md:grid md:grid-cols-[28%_44%_28%] items-center">
             {/* Left section */}
-            <div className="flex items-center px-4">
-              <div className="flex flex-col gap-1">
-                <p className="max-w-xs truncate text-sm">
+            <div className="flex items-center px-6">
+              <div className="flex flex-col gap-0.5">
+                <p className="max-w-xs truncate text-xs font-bold text-slate-800">
                   {currentAudio?.title}
                 </p>
-                <div className="flex items-center text-xs text-gray-400">
+                <div className="flex items-center text-[11px] text-slate-400">
                   {voice && (
                     <>
                       <div className="flex items-center">
                         <div
-                          className="mr-1 flex h-3 w-3 items-center justify-center rounded-full text-white"
+                          className="mr-1.5 flex h-2.5 w-2.5 items-center justify-center rounded-full"
                           style={{ background: voice.gradientColors }}
                         />
-                        <span>{voice.name}</span>
-                        <span className="mx-1">·</span>
+                        <span className="font-medium text-slate-600">{voice.name}</span>
+                        <span className="mx-1.5 text-slate-300">·</span>
                       </div>
                     </>
                   )}
 
                   <div className="flex items-center">
-                    <IoTimeOutline className="mr-1 h-3 w-3" />
-                    <span>{currentAudio?.createdAt || "Just now"}</span>
+                    <IoTimeOutline className="mr-1 h-3 w-3 text-slate-400" />
+                    <span>{currentAudio?.createdAt || "Baru saja"}</span>
                   </div>
                 </div>
               </div>
@@ -140,16 +140,17 @@ export default function Playbar() {
 
             {/* Center section */}
             <div className="flex flex-col items-center justify-center">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-4">
                 <button
                   onClick={skipBackward}
-                  className="rounded-full p-2 hover:bg-gray-100"
+                  className="rounded-full p-1.5 text-slate-400 hover:text-sky-700 hover:bg-sky-50 transition-colors"
+                  title="Mundur 10 detik"
                 >
-                  <RiReplay10Fill className="h-5 w-5" />
+                  <RiReplay10Fill className="h-4 w-4" />
                 </button>
                 <button
                   onClick={togglePlayPause}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/25 hover:from-sky-400 hover:to-blue-500 active:scale-95 transition-all"
                 >
                   {isPlaying ? (
                     <IoPause className="h-5 w-5" />
@@ -159,38 +160,41 @@ export default function Playbar() {
                 </button>
                 <button
                   onClick={skipForward}
-                  className="rounded-full p-2 hover:bg-gray-100"
+                  className="rounded-full p-1.5 text-slate-400 hover:text-sky-700 hover:bg-sky-50 transition-colors"
+                  title="Maju 10 detik"
                 >
-                  <RiForward10Fill className="h-5 w-5" />
+                  <RiForward10Fill className="h-4 w-4" />
                 </button>
               </div>
-              <div className="mt-1 flex w-full items-center">
-                <span className="mr-2 text-xs text-gray-400">
+              <div className="mt-1.5 flex w-full max-w-sm items-center">
+                <span className="mr-2.5 text-[11px] font-mono text-slate-400">
                   {getCurrentTimeFormatted()}
                 </span>
                 <div className="relative flex-1">
-                  <div className="h-1 rounded-full bg-gray-200">
+                  <div className="h-1 rounded-full bg-slate-200">
                     <div
-                      className="absolute h-1 rounded-full bg-black"
+                      className="absolute h-1 rounded-full bg-gradient-to-r from-sky-500 to-blue-600"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
                 </div>
-                <span className="ml-2 text-xs text-gray-400">{duration}</span>
+                <span className="ml-2.5 text-[11px] font-mono text-slate-400">{duration}</span>
               </div>
             </div>
 
             {/* Right section */}
-            <div className="flex items-center justify-end gap-4 px-6">
+            <div className="flex items-center justify-end gap-3 px-6">
               <button
                 onClick={downloadAudio}
-                className="rounded-full p-1.5 hover:bg-gray-100"
+                className="rounded-xl p-2 text-slate-500 hover:text-sky-700 hover:bg-sky-50 transition-colors"
+                title="Unduh Audio"
               >
                 <IoDownloadOutline className="h-5 w-5" />
               </button>
               <button
                 onClick={togglePlaybar}
-                className="rounded-full p-1.5 hover:bg-gray-100"
+                className="rounded-xl p-2 text-slate-500 hover:text-sky-700 hover:bg-sky-50 transition-colors"
+                title="Tutup Player"
               >
                 <IoChevronDown className="h-5 w-5" />
               </button>
@@ -198,47 +202,34 @@ export default function Playbar() {
           </div>
 
           {/* Mobile view */}
-          <div className="flex h-full md:hidden">
-            <div className="flex flex-1 items-center px-4">
-              <div className="flex w-full flex-col gap-1">
-                <p className="truncate text-sm">{currentAudio?.title}</p>
-
-                <div className="flex items-center text-xs text-gray-400">
+          <div className="flex h-full md:hidden items-center px-4">
+            <div className="flex flex-1 items-center">
+              <div className="flex w-full flex-col gap-0.5">
+                <p className="truncate text-xs font-bold text-slate-800">{currentAudio?.title}</p>
+                <div className="flex items-center text-[10px] text-slate-400">
                   {voice && (
-                    <>
-                      <div className="flex items-center">
-                        <div
-                          className="mr-1 flex h-3 w-3 items-center justify-center rounded-full text-white"
-                          style={{ background: voice.gradientColors }}
-                        />
-                        <span>{voice.name}</span>
-                        <span className="mx-1">·</span>
-                      </div>
-                    </>
+                    <span className="font-medium text-slate-600 mr-2">{voice.name}</span>
                   )}
-                  <div className="flex items-center">
-                    <IoTimeOutline className="mr-1 h-3 w-3" />
-                    <span>{currentAudio?.createdAt || "Just now"}</span>
-                  </div>
+                  <span>{currentAudio?.createdAt || "Baru saja"}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 px-4">
+            <div className="flex items-center gap-2">
               <button
                 onClick={downloadAudio}
-                className="rounded-full p-1.5 hover:bg-gray-100"
+                className="rounded-lg p-1.5 text-slate-500 hover:bg-sky-50"
               >
-                <IoDownloadOutline className="h-5 w-5" />
+                <IoDownloadOutline className="h-4 w-4" />
               </button>
               <button
                 onClick={togglePlayPause}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-sm"
               >
                 {isPlaying ? (
-                  <IoPause className="h-5 w-5" />
+                  <IoPause className="h-4 w-4" />
                 ) : (
-                  <IoPlay className="ml-0.5 h-5 w-5" />
+                  <IoPlay className="ml-0.5 h-4 w-4" />
                 )}
               </button>
             </div>

@@ -1,3 +1,83 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#f8fafc] text-slate-900 antialiased selection:bg-sky-100 selection:text-sky-900;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Apple HIG Liquid Glass & Softblue Design System */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 4px 24px -1px rgba(14, 165, 233, 0.07),
+    0 1px 3px 0 rgba(0, 0, 0, 0.02),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.liquid-glass-subtle {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(224, 242, 254, 0.6);
+  box-shadow: 
+    0 2px 16px 0 rgba(14, 165, 233, 0.04),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.liquid-glass-pill {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(224, 242, 254, 0.8);
+  box-shadow: 
+    0 2px 8px -1px rgba(14, 165, 233, 0.08),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-glass-pill:hover {
+  background: rgba(240, 249, 255, 0.95);
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 
+    0 4px 16px -2px rgba(14, 165, 233, 0.15),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 1);
+}
+
+.liquid-glass-active {
+  background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 
+    0 4px 16px 0 rgba(14, 165, 233, 0.35),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+}
+
+/* Ambient Softblue Glow */
+.ambient-softblue-bg {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(56, 189, 248, 0.14), rgba(240, 249, 255, 0.6) 45%, rgba(248, 250, 252, 1) 100%);
+}
+
+/* Minimalist macOS-style Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(14, 165, 233, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 165, 233, 0.3);
+}

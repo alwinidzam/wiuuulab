@@ -95,6 +95,8 @@ export function TextToSpeechEditor({
 
         playAudio(newAudio);
         toast.success("Suara berhasil digenerate!");
+      } else {
+        toast.error(result.error || "Gagal mengenerate suara. Silakan coba lagi.");
       }
     } catch (error) {
       console.error("Error generating speech: ", error);
@@ -107,9 +109,9 @@ export function TextToSpeechEditor({
   };
 
   return (
-    <div className="flex h-full flex-col justify-between">
+    <div className="flex h-full flex-col justify-between rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl shadow-sm overflow-hidden">
       {/* Main Textarea */}
-      <div className="flex flex-grow flex-col">
+      <div className="flex flex-grow flex-col p-4 sm:p-6">
         <textarea
           ref={textareaRef}
           value={textContent}
@@ -117,13 +119,13 @@ export function TextToSpeechEditor({
           placeholder={activePlaceholder}
           disabled={loading}
           rows={8}
-          className="w-full flex-grow resize-none rounded-xl bg-white p-4 text-base text-gray-800 placeholder:font-light placeholder:text-gray-400 focus:border-none focus:outline-none focus:ring-0"
+          className="w-full flex-grow resize-none bg-transparent p-2 text-base text-slate-800 placeholder:font-light placeholder:text-slate-400 focus:border-none focus:outline-none focus:ring-0 leading-relaxed"
         />
 
         {/* Suggestion Template Pills (Visible when empty) */}
         {textContent.length === 0 && (
-          <div className="my-3 px-2 md:px-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+          <div className="my-4 px-2">
+            <p className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Coba teks template cepat:
             </p>
 
@@ -159,7 +161,7 @@ export function TextToSpeechEditor({
                 <button
                   key={text}
                   type="button"
-                  className="flex items-center rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 shadow-sm transition hover:bg-gray-50 hover:border-gray-300"
+                  className="flex items-center rounded-xl border border-slate-200/80 bg-white/90 px-3 py-2 text-xs font-medium text-slate-700 shadow-xs transition-all duration-200 hover:border-sky-300 hover:bg-sky-50/70 hover:text-sky-800"
                   onMouseEnter={() => handleButtonHover(text)}
                   onMouseLeave={() =>
                     setActivePlaceholder(
@@ -168,7 +170,7 @@ export function TextToSpeechEditor({
                   }
                   onClick={() => handleButtonClick(text)}
                 >
-                  <span className="mr-1.5 text-gray-500">{icon}</span>
+                  <span className="mr-1.5 text-sky-600 text-sm">{icon}</span>
                   {text}
                 </button>
               ))}
@@ -178,7 +180,7 @@ export function TextToSpeechEditor({
       </div>
 
       {/* Bottom Action Bar: Always Visible ElevenLabs Controls */}
-      <div className="border-t border-gray-100 bg-white p-3 md:p-4">
+      <div className="border-t border-slate-100/90 bg-white/95 backdrop-blur-md p-4 sm:px-6">
         <GenerateButton
           onGenerate={handleGenerateSpeech}
           isDisabled={

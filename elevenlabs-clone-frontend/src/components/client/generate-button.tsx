@@ -37,8 +37,9 @@ export function GenerateButton({
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
           {showCredits && (
             <div className="flex items-center space-x-1.5">
-              <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                ✨ 100% Free • Unlimited
+              <span className="inline-flex items-center gap-1.5 rounded-full liquid-glass-pill px-3 py-1 text-xs font-semibold text-sky-800">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+                100% Neural Studio • Unlimited
               </span>
             </div>
           )}
@@ -47,9 +48,9 @@ export function GenerateButton({
           {showCharacterCount &&
             characterCount !== undefined &&
             characterLimit !== undefined && (
-              <p className="text-xs text-gray-500">
-                <span>{characterCount}</span> / <span>{characterLimit}</span>
-                <span className="ml-1 hidden sm:inline-block">characters</span>
+              <p className="text-xs font-medium text-slate-500">
+                <span className="text-slate-800 font-semibold">{characterCount}</span> / <span>{characterLimit}</span>
+                <span className="ml-1 hidden sm:inline-block">karakter</span>
               </p>
             )}
         </div>
@@ -60,23 +61,28 @@ export function GenerateButton({
       >
         {showDownload && (
           <button
-            className="hidden min-h-9 min-w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 lg:flex"
+            className="hidden min-h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 backdrop-blur-md text-slate-600 hover:bg-sky-50 hover:text-sky-700 shadow-xs transition-colors lg:flex"
             type="button"
             disabled={true}
+            title="Download Audio"
           >
             <GoDownload className="h-4 w-4" />
           </button>
         )}
 
         <button
-          className={`h-9 w-full whitespace-nowrap rounded-lg bg-black px-3 text-sm font-medium text-white ${isDisabled ? "cursor-not-allowed opacity-50" : "hover:bg-gray-800"}`}
+          className={`h-10 w-full whitespace-nowrap rounded-xl px-4 text-sm font-semibold text-white transition-all duration-200 ${
+            isDisabled || isLoading
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border border-transparent"
+              : "bg-gradient-to-r from-sky-500 via-sky-600 to-blue-600 hover:from-sky-400 hover:via-sky-500 hover:to-blue-500 shadow-md shadow-sky-500/25 hover:shadow-lg hover:shadow-sky-500/35 active:scale-[0.98] border border-sky-400/40"
+          }`}
           onClick={onGenerate}
           disabled={isDisabled || isLoading}
         >
           {isLoading ? (
             <div className="flex items-center justify-center">
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-              <span className="ml-2">{buttonText}</span>
+              <span className="ml-2">Mengolah Suara...</span>
             </div>
           ) : (
             buttonText
