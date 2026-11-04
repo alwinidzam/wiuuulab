@@ -121,87 +121,87 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
 
   if (key.includes("alwi")) {
     // Alwi: Horror Baritone (Cinematic Horror Narrator)
-    // Formula: Pitch bariton (-8Hz), tempo misteri (-12%)
-    const rateVal = Math.round(-12 * speedMultiplier);
+    // Multi-Neural Voice: WilliamMultilingual gives rich dark suspenseful timbre distinct from Indonesian Ardi
+    const rateVal = Math.round(-10 * speedMultiplier);
     return {
-      voiceId: "id-ID-ArdiNeural",
+      voiceId: "en-AU-WilliamMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-8Hz",
+      pitch: "-5Hz",
     };
   }
 
   if (key.includes("serena")) {
     // Serena: Heartfelt Indonesian (Novel & Poetry Narrator)
-    // Formula: 1:1 match terhadap benchmark ElevenLabs F0 ~195Hz (-28Hz, tempo -4%)
+    // Multi-Neural Voice: AvaMultilingual provides warm, soft, emotional cadence distinct from Gadis
     const rateVal = Math.round(-4 * speedMultiplier);
     return {
-      voiceId: "id-ID-GadisNeural",
+      voiceId: "en-US-AvaMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-28Hz",
+      pitch: "-2Hz",
     };
   }
 
   if (key.includes("ongky")) {
     // Ongky Himawan: Calm & Deep Baritone
-    // Formula: Bariton resonansi dada bawah, tenang, mantap, dan berwibawa
+    // Multi-Neural Voice: AndrewMultilingual delivers natural chest resonance distinct from Ardi
     const rateVal = Math.round(-5 * speedMultiplier);
     return {
-      voiceId: "id-ID-ArdiNeural",
+      voiceId: "en-US-AndrewMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-6Hz",
+      pitch: "-3Hz",
     };
   }
 
   if (key.includes("bowo")) {
     // Bowo: Intimidating and Hoarse (Creaky Vocal Fry)
-    // Formula: Serak basah berat, nada rendah mengintimidasi narasi horor/misteri
+    // Formula: Native Ardi pitched down to gravelly sub-bass register
     const rateVal = Math.round(-8 * speedMultiplier);
     return {
       voiceId: "id-ID-ArdiNeural",
       rate: `${rateVal}%`,
-      pitch: "-12Hz",
+      pitch: "-14Hz",
     };
   }
 
   if (key.includes("nandar")) {
-    // Kang Nandar: Smooth, Soothing and Calm
-    // Formula: Tutur kata ramah, hangat, santai untuk explainer dan dongeng
+    // Kang Nandar: Smooth, Soothing and Calm (Indonesian Elder Explainer)
     const rateVal = Math.round(-2 * speedMultiplier);
     return {
       voiceId: "id-ID-ArdiNeural",
       rate: `${rateVal}%`,
-      pitch: "+0Hz",
+      pitch: "+1Hz",
     };
   }
 
   if (key.includes("mangili")) {
-    // Mangili: Encouraging & Sleep Story
-    // Formula: Vokal hipnotik pengantar tidur (sleep story)
-    const rateVal = Math.round(-14 * speedMultiplier);
+    // Mangili: Encouraging & Hypnotic Sleep Story
+    // Multi-Neural Voice: EmmaMultilingual gives tender, gentle, whisper-soft night lullaby
+    const rateVal = Math.round(-12 * speedMultiplier);
     return {
-      voiceId: "id-ID-GadisNeural",
+      voiceId: "en-US-EmmaMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-4Hz",
+      pitch: "-3Hz",
     };
   }
 
   if (key.includes("adam")) {
     // Adam: Distinct, Deep and Engaging (Official ElevenLabs signature baritone)
+    // Multi-Neural Voice: BrianMultilingual provides iconic deep resonance
     const rateVal = Math.round(-4 * speedMultiplier);
     return {
-      voiceId: "en-US-GuyNeural",
+      voiceId: "en-US-BrianMultilingualNeural",
       rate: `${rateVal}%`,
       pitch: "-2Hz",
     };
   }
 
   if (key.includes("jenna")) {
-    // Jenna: Warm, Soft, and Sultry (Desah napas tipis)
-    const rateVal = Math.round(-8 * speedMultiplier);
+    // Jenna: Warm, Soft, and Sultry (Intimate English Narration)
+    const rateVal = Math.round(-6 * speedMultiplier);
     return {
       voiceId: "en-US-JennyNeural",
       rate: `${rateVal}%`,
-      pitch: "-3Hz",
+      pitch: "-2Hz",
     };
   }
 
