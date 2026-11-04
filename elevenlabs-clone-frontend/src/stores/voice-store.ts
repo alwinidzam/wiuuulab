@@ -19,33 +19,54 @@ export interface Voice {
 }
 
 const voices: Voice[] = [
-  // Indonesian Native Neural Voices (100% Logat, Dialek, Slang, Formal, Kasual & Storytelling)
-  {
-    id: "alwi",
-    name: "Alwi (Cinematic Horror Narrator 🎙️)",
-    description: "Medium-low bariton, hangat, sedikit husky, tempo tenang — narasi horor, misteri & creepypasta",
-    gradientColors: "linear-gradient(45deg, #1e293b, #475569, #0f172a, #334155)",
-    service: "styletts2",
-  },
+  // Indonesian Native Neural Voices (100% Sampling Resmi & Formula Human-Feel)
   {
     id: "athalea",
-    name: "Athalea (Puitis & Intim • 1:1 Clone 🕯️)",
-    description: "Puitis, lembut, intim, jeda napas alami (1:1 Acoustic Clone) — monolog senja, kisah cinta, misteri & narasi puitis",
+    name: "Athalea (Sendu & Serak Basah • 1:1 Sample Clone 🕯️)",
+    description: "F0 248Hz register dada (-14Hz), tempo -16%, puitis, intim, jeda napas respirasi alami dari sampel asli user",
     gradientColors: "linear-gradient(45deg, #831843, #be185d, #fda4af, #500724)",
     service: "styletts2",
   },
   {
-    id: "gadis",
-    name: "Gadis / Naya (Indonesian Storyteller 📖)",
-    description: "Hangat, empatik, jeda dramatis — sangat cocok untuk dongeng, novel, dan creepypasta",
+    id: "serena",
+    name: "Serena (Heartfelt Indonesian • Lembut & Hangat 🎙️)",
+    description: "Voice ID: fpsPI3vlnQ0anCTPiHk5 • Lembut, hangat, penuh penghayatan emosional mendalam narator novel & puisi",
     gradientColors: GRADIENT_COLORS[0]!,
     service: "styletts2",
   },
   {
-    id: "serena",
-    name: "Serena (Indonesian Heartfelt & Audiobooks 🎙️)",
-    description: "Lembut, menenangkan, penuh emosi mendalam untuk narasi reflektif dan puisi",
+    id: "alwi",
+    name: "Alwi (Horror Baritone & Cinematic Storyteller 🎬)",
+    description: "Voice ID: R86jddkroI9bJwXFfjsr • Pitch bariton (-8Hz), tempo misteri (-12%) narasi horor, misteri & creepypasta",
+    gradientColors: "linear-gradient(45deg, #1e293b, #475569, #0f172a, #334155)",
+    service: "styletts2",
+  },
+  {
+    id: "ongky",
+    name: "Ongky Himawan (Calm & Deep Baritone 🎙️)",
+    description: "Voice ID: 5YVVTVlHuEcIu0JBLbEF • Bariton resonansi dada bawah, tenang, mantap, dan berwibawa",
+    gradientColors: "linear-gradient(45deg, #0f172a, #334155, #64748b, #1e293b)",
+    service: "styletts2",
+  },
+  {
+    id: "bowo",
+    name: "Bowo (Intimidating & Hoarse Vocal Fry ⚡)",
+    description: "Voice ID: LxiqOV1uxBCgYTeitAHf • Serak basah berat (creaky vocal fry & hoarse timbre), nada rendah mengintimidasi narasi horor",
+    gradientColors: "linear-gradient(45deg, #451a03, #78350f, #b45309, #292524)",
+    service: "styletts2",
+  },
+  {
+    id: "nandar",
+    name: "Kang Nandar (Smooth, Soothing and Calm 🍃)",
+    description: "Voice ID: aK834gEOxQEtviMPgurT • Tutur kata ramah, hangat, dan santai untuk explainer dan dongeng",
     gradientColors: GRADIENT_COLORS[1]!,
+    service: "styletts2",
+  },
+  {
+    id: "mangili",
+    name: "Mangili (Encouraging & Sleep Story 🌙)",
+    description: "Voice ID: xw0L8SaiU5Mv7xqjcraJ • Vokal hipnotik pengantar tidur (sleep story)",
+    gradientColors: "linear-gradient(45deg, #1e1b4b, #312e81, #4338ca, #172554)",
     service: "styletts2",
   },
   {
@@ -62,34 +83,20 @@ const voices: Voice[] = [
     gradientColors: GRADIENT_COLORS[3]!,
     service: "styletts2",
   },
-  {
-    id: "mahaputra",
-    name: "Mahaputra (Indonesian Formal & News Anchor 📰)",
-    description: "Artikulasi baku EYD, tegas, berwibawa — sempurna untuk berita resmi & presentasi korporat",
-    gradientColors: GRADIENT_COLORS[4]!,
-    service: "styletts2",
-  },
-  {
-    id: "ujang",
-    name: "Ujang (Indonesian Javanese Accent / Medok 🌿)",
-    description: "Logat Jawa autentik yang halus, ramah, dan menenangkan untuk konten daerah",
-    gradientColors: GRADIENT_COLORS[5]!,
-    service: "styletts2",
-  },
-  {
-    id: "ardi",
-    name: "Ardi (Indonesian Narrator & Documentary 🎬)",
-    description: "Bariton dalam, sinematik, cocok untuk dokumenter sains dan podcast",
-    gradientColors: GRADIENT_COLORS[5]!,
-    service: "styletts2",
-  },
 
-  // Official ElevenLabs Neural Voices (Direct Neural Engine)
+  // English & Global Neural Voices (Official ElevenLabs Sampling)
   {
     id: "adam",
-    name: "Adam (Official ElevenLabs Dominant Narrator 🎙️)",
-    description: "Deep, firm, authoritative narrator — ElevenLabs signature baritone voice",
+    name: "Adam (Distinct, Deep and Engaging 🎙️)",
+    description: "Voice ID: bfGb7JTLUnZebZRiFYyq • Bariton klasik legendaris ElevenLabs untuk narasi dokumenter sinematik",
     gradientColors: "linear-gradient(45deg, #1e3a8a, #3b82f6, #93c5fd, #172554)",
+    service: "styletts2",
+  },
+  {
+    id: "jenna",
+    name: "Jenna (Warm, Soft, and Sultry 🌸)",
+    description: "Voice ID: qFjcP4hHD9WIdODvuJOJ • Suara wanita intim dengan tekstur desah napas tipis (sultry & breathy)",
+    gradientColors: "linear-gradient(45deg, #831843, #db2777, #fbcfe8, #500724)",
     service: "styletts2",
   },
   {

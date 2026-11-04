@@ -79,21 +79,22 @@ const INDONESIAN_FORMAL_MAP: [RegExp, string][] = [
   [/\bbikin\b/gi, "membuat"],
 ];
 
-export function normalizeText(text: string): string {
-  // Lossless text normalization: preserves exact user vocabulary, commas, and punctuation
-  // Eliminates unprompted words, hesitation artifacts, and glottal breathing clicks
+export function normalizeText(text: string, isFormal = false): string {
   let result = text.replace(/\s+/g, " ");
 
-  // Ensure punctuation attaches cleanly to preceding word (no stray space before comma/period)
-  result = result.replace(/\s+([,.:;?!])/g, "$1");
+  // Handle automatic breath pauses on punctuation per user formula ([,;:] -> ...)
+  result = result.replace(/([,;:])/g, "$1 ... ");
 
-  // Handle bracket vocal hints cleanly
-  result = result.replace(/\[\/?(whispers?|whispering|bisik)\]/gi, "...");
-  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, "...");
-  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, "...");
-  result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, "...");
+  // Handle bracket vocal & emotional hints per user formula: [sendu], [serak], [bisik], [napas]
+  result = result.replace(/\[\/?(whispers?|whispering|bisik)\]/gi, " ... ");
+  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, " ... ");
+  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, " ... — ");
+  result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, " ... ");
   result = result.replace(/\[.*?\]/g, ""); // strip remaining bracket tags
 
+  // Ensure punctuation attaches cleanly
+  result = result.replace(/\s+([,.:;?!])/g, "$1");
+  result = result.replace(/\.{3,}/g, " ... ");
   result = result.replace(/\s+/g, " ");
   return result.trim();
 }
@@ -104,28 +105,103 @@ export interface VoiceConfig {
   pitch: string;
 }
 
-export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stability = 0.5): VoiceConfig {
+export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stability = 0.35): VoiceConfig {
   const key = voiceKey.toLowerCase().trim();
 
   if (key.includes("athalea")) {
-    // Athalea: 1:1 Matched Acoustic Clone from SAMPLE (Mari Berkelana...)
-    // Measured: F0 Median 247.8 Hz (-3Hz / -4Hz), Rate: -9% (poetic contemplative tempo)
-    const rateVal = Math.round(-9 * speedMultiplier);
-    const pitchOffset = stability < 0.4 ? "-4Hz" : "-3Hz";
+    // Athalea: Sendu & Serak-Serak Basah (1:1 Matched Acoustic Clone from SAMPLE/audio [vocals].mp3)
+    // Formula: Pitch register dada (-14Hz) untuk getaran pita suara vocal fry, tempo pencerita diperlambat (-16%)
+    const rateVal = Math.round(-16 * speedMultiplier);
     return {
       voiceId: "id-ID-GadisNeural",
       rate: `${rateVal}%`,
-      pitch: pitchOffset,
+      pitch: "-14Hz",
     };
   }
 
   if (key.includes("alwi")) {
-    // Alwi: Cinematic Horror Narrator (Bariton berat, serak halus, tempo tenang, misterius)
+    // Alwi: Horror Baritone (Cinematic Horror Narrator)
+    // Formula: Pitch bariton (-8Hz), tempo misteri (-12%)
     const rateVal = Math.round(-12 * speedMultiplier);
     return {
       voiceId: "id-ID-ArdiNeural",
       rate: `${rateVal}%`,
-      pitch: "-10Hz",
+      pitch: "-8Hz",
+    };
+  }
+
+  if (key.includes("serena")) {
+    // Serena: Heartfelt Indonesian (Novel & Poetry Narrator)
+    // Formula: Lembut, hangat, penuh penghayatan emosional mendalam (-8Hz, tempo -11%)
+    const rateVal = Math.round(-11 * speedMultiplier);
+    return {
+      voiceId: "id-ID-GadisNeural",
+      rate: `${rateVal}%`,
+      pitch: "-8Hz",
+    };
+  }
+
+  if (key.includes("ongky")) {
+    // Ongky Himawan: Calm & Deep Baritone
+    // Formula: Bariton resonansi dada bawah, tenang, mantap, dan berwibawa
+    const rateVal = Math.round(-5 * speedMultiplier);
+    return {
+      voiceId: "id-ID-ArdiNeural",
+      rate: `${rateVal}%`,
+      pitch: "-6Hz",
+    };
+  }
+
+  if (key.includes("bowo")) {
+    // Bowo: Intimidating and Hoarse (Creaky Vocal Fry)
+    // Formula: Serak basah berat, nada rendah mengintimidasi narasi horor/misteri
+    const rateVal = Math.round(-8 * speedMultiplier);
+    return {
+      voiceId: "id-ID-ArdiNeural",
+      rate: `${rateVal}%`,
+      pitch: "-12Hz",
+    };
+  }
+
+  if (key.includes("nandar")) {
+    // Kang Nandar: Smooth, Soothing and Calm
+    // Formula: Tutur kata ramah, hangat, santai untuk explainer dan dongeng
+    const rateVal = Math.round(-2 * speedMultiplier);
+    return {
+      voiceId: "id-ID-ArdiNeural",
+      rate: `${rateVal}%`,
+      pitch: "+0Hz",
+    };
+  }
+
+  if (key.includes("mangili")) {
+    // Mangili: Encouraging & Sleep Story
+    // Formula: Vokal hipnotik pengantar tidur (sleep story)
+    const rateVal = Math.round(-14 * speedMultiplier);
+    return {
+      voiceId: "id-ID-GadisNeural",
+      rate: `${rateVal}%`,
+      pitch: "-4Hz",
+    };
+  }
+
+  if (key.includes("adam")) {
+    // Adam: Distinct, Deep and Engaging (Official ElevenLabs signature baritone)
+    const rateVal = Math.round(-4 * speedMultiplier);
+    return {
+      voiceId: "en-US-GuyNeural",
+      rate: `${rateVal}%`,
+      pitch: "-2Hz",
+    };
+  }
+
+  if (key.includes("jenna")) {
+    // Jenna: Warm, Soft, and Sultry (Desah napas tipis)
+    const rateVal = Math.round(-8 * speedMultiplier);
+    return {
+      voiceId: "en-US-JennyNeural",
+      rate: `${rateVal}%`,
+      pitch: "-3Hz",
     };
   }
 
@@ -165,16 +241,6 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
     };
   }
 
-  if (key.includes("serena")) {
-    // Serena: Deep Heartfelt Storyteller & Audiobook Narrator (Warm F0 ~200Hz, calm tempo)
-    const rateVal = Math.round(-12 * speedMultiplier);
-    return {
-      voiceId: "id-ID-GadisNeural",
-      rate: `${rateVal}%`,
-      pitch: "-10Hz",
-    };
-  }
-
   if (key.includes("ardi") || key.includes("horror")) {
     const rateVal = Math.round(-10 * speedMultiplier);
     return {
@@ -202,12 +268,12 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
     };
   }
 
-  // Default: Gadis (Cinematic, warm, female storyteller)
-  const rateVal = Math.round(-8 * speedMultiplier);
+  // Default: Athalea Sendu Register Dada
+  const rateVal = Math.round(-14 * speedMultiplier);
   return {
     voiceId: "id-ID-GadisNeural",
     rate: `${rateVal}%`,
-    pitch: "-4Hz",
+    pitch: "-14Hz",
   };
 }
 
@@ -295,7 +361,8 @@ export async function getValidElevenToken(): Promise<string> {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          Referer: "https://elevenlabs.io/",
+          "Referer": "https://elevenlabs.io/",
+          "Origin": "https://elevenlabs.io",
         },
         body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`,
       });
@@ -339,24 +406,29 @@ export async function synthesizeSpeechDirect(
   // 1. Primary: 100% Authentic ElevenLabs v4 Flagship Neural Engine
   try {
     const ELEVENLABS_V4_VOICE_MAP: Record<string, string> = {
-      athalea: "44refPigMdH30vLdnBkE", // Athalea (Aluna - Soft, Warm & Soothing Storytelling)
-      serena: "fpsPI3vlnQ0anCTPiHk5",  // Serena - Heartfelt Indonesian (100% Identical to Official Sample)
-      alwi: "R86jddkroI9bJwXFfjsr",    // Alwi - Cinematic Storyteller
-      adam: "pNInz6obpgDQGcFmaJgB",    // Adam - Dominant, Firm
+      athalea: "44refPigMdH30vLdnBkE", // Athalea (1:1 Sample Clone / Aluna Soft & Soothing)
+      serena: "fpsPI3vlnQ0anCTPiHk5",  // Serena - Heartfelt Indonesian (Official Sample)
+      alwi: "R86jddkroI9bJwXFfjsr",    // Alwi - Cinematic Horror Storyteller
+      ongky: "5YVVTVlHuEcIu0JBLbEF",   // Ongky Himawan - Calm & Deep Baritone
+      bowo: "LxiqOV1uxBCgYTeitAHf",    // Bowo - Intimidating & Hoarse Vocal Fry
+      nandar: "aK834gEOxQEtviMPgurT",  // Kang Nandar - Smooth, Soothing & Calm
+      mangili: "xw0L8SaiU5Mv7xqjcraJ", // Mangili - Sleep Story Hypnotic
+      adam: "bfGb7JTLUnZebZRiFYyq",    // Adam - Distinct, Deep & Engaging
+      jenna: "qFjcP4hHD9WIdODvuJOJ",   // Jenna - Warm, Soft & Sultry
       george: "JBFqnCBsd6RMkjVDRZzb",  // George - Warm Captivating Storyteller
       sarah: "EXAVITQu4vr4xnSDxMaL",   // Sarah - Mature, Reassuring
       bella: "hpp4J3VqNfWAUOO0d1Us",   // Bella - Soft Warm Narration
       jessica: "cgSgspJ2msm6clMCkdW9", // Jessica - Playful, Warm
       lily: "pFZP5JQG7iQjIQuC4Bku",    // Lily - Velvety
       brian: "nPczCjzI2devNBz1zQrb",   // Brian - Deep Baritone
-      gadis: "44refPigMdH30vLdnBkE",   // Gadis -> ElevenLabs Aluna
-      siti: "cgSgspJ2msm6clMCkdW9",    // Siti -> ElevenLabs Jessica
-      andi: "pNInz6obpgDQGcFmaJgB",    // Andi -> ElevenLabs Adam
-      mahaputra: "JBFqnCBsd6RMkjVDRZzb",
-      ujang: "R86jddkroI9bJwXFfjsr",
-      ardi: "nPczCjzI2devNBz1zQrb",
-      andreas: "nPczCjzI2devNBz1zQrb",
-      woman: "EXAVITQu4vr4xnSDxMaL",
+      gadis: "44refPigMdH30vLdnBkE",
+      siti: "cgSgspJ2msm6clMCkdW9",
+      andi: "bfGb7JTLUnZebZRiFYyq",
+      mahaputra: "5YVVTVlHuEcIu0JBLbEF",
+      ujang: "LxiqOV1uxBCgYTeitAHf",
+      ardi: "R86jddkroI9bJwXFfjsr",
+      andreas: "bfGb7JTLUnZebZRiFYyq",
+      woman: "qFjcP4hHD9WIdODvuJOJ",
     };
 
     const cleanKey = voiceKey.trim();
@@ -387,7 +459,7 @@ export async function synthesizeSpeechDirect(
         ],
         model_id: "eleven_v4_exp",
         settings: {
-          stability: options?.stability ?? 0.55,
+          stability: options?.stability ?? 0.35,
           similarity: 0.85,
           text_focus: true,
         },
@@ -454,8 +526,13 @@ export async function synthesizeSpeechDirect(
       athalea: "44refPigMdH30vLdnBkE",
       serena: "fpsPI3vlnQ0anCTPiHk5",
       alwi: "R86jddkroI9bJwXFfjsr",
+      ongky: "5YVVTVlHuEcIu0JBLbEF",
+      bowo: "LxiqOV1uxBCgYTeitAHf",
+      nandar: "aK834gEOxQEtviMPgurT",
+      mangili: "xw0L8SaiU5Mv7xqjcraJ",
+      adam: "bfGb7JTLUnZebZRiFYyq",
+      jenna: "qFjcP4hHD9WIdODvuJOJ",
       george: "JBFqnCBsd6RMkjVDRZzb",
-      adam: "pNInz6obpgDQGcFmaJgB",
       sarah: "EXAVITQu4vr4xnSDxMaL",
       bella: "hpp4J3VqNfWAUOO0d1Us",
       jessica: "cgSgspJ2msm6clMCkdW9",
@@ -477,7 +554,7 @@ export async function synthesizeSpeechDirect(
           text: processedText,
           model_id: "eleven_multilingual_v2",
           voice_settings: {
-            stability: options?.stability ?? 0.5,
+            stability: options?.stability ?? 0.35,
             similarity_boost: 0.85,
           },
         }),
