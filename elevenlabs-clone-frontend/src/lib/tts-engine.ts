@@ -1,4 +1,5 @@
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
+import { analyzeContext, type ContextAnalysisResult } from "./context-engine";
 
 // Indonesian Slang & Colloquial Normalizer (Jaksel, Casual, Social Media)
 const INDONESIAN_CASUAL_MAP: [RegExp, string][] = [
@@ -105,103 +106,128 @@ export interface VoiceConfig {
   pitch: string;
 }
 
-export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stability = 0.35): VoiceConfig {
+export function getVoiceConfig(
+  voiceKey: string,
+  speedMultiplier = 1.0,
+  stability = 0.35,
+  context?: ContextAnalysisResult
+): VoiceConfig {
   const key = voiceKey.toLowerCase().trim();
+  const cRate = context?.rateOffsetPercent ?? 0;
+  const cPitch = context?.pitchOffsetHz ?? 0;
 
   if (key.includes("athalea")) {
     // Athalea: Sendu & Serak-Serak Basah (1:1 Matched Acoustic Clone from SAMPLE/audio [vocals].mp3)
     // Formula: Pitch register dada (-14Hz) untuk getaran pita suara vocal fry, tempo pencerita diperlambat (-12%)
-    const rateVal = Math.round(-12 * speedMultiplier);
+    const baseRate = -12 + cRate;
+    const basePitch = -14 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "id-ID-GadisNeural",
       rate: `${rateVal}%`,
-      pitch: "-14Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
   if (key.includes("alwi")) {
     // Alwi: Horror Baritone (Cinematic Horror Narrator)
     // Multi-Neural Voice: WilliamMultilingual gives rich dark suspenseful timbre distinct from Indonesian Ardi
-    const rateVal = Math.round(-10 * speedMultiplier);
+    const baseRate = -10 + cRate;
+    const basePitch = -5 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "en-AU-WilliamMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-5Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
   if (key.includes("serena")) {
     // Serena: Heartfelt Indonesian (Novel & Poetry Narrator)
     // Multi-Neural Voice: AvaMultilingual provides warm, soft, emotional cadence distinct from Gadis
-    const rateVal = Math.round(-4 * speedMultiplier);
+    const baseRate = -4 + cRate;
+    const basePitch = -2 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "en-US-AvaMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-2Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
   if (key.includes("ongky")) {
     // Ongky Himawan: Calm & Deep Baritone
     // Multi-Neural Voice: AndrewMultilingual delivers natural chest resonance distinct from Ardi
-    const rateVal = Math.round(-5 * speedMultiplier);
+    const baseRate = -5 + cRate;
+    const basePitch = -3 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "en-US-AndrewMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-3Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
   if (key.includes("bowo")) {
     // Bowo: Intimidating and Hoarse (Creaky Vocal Fry)
     // Formula: Native Ardi pitched down to gravelly sub-bass register
-    const rateVal = Math.round(-8 * speedMultiplier);
+    const baseRate = -8 + cRate;
+    const basePitch = -14 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "id-ID-ArdiNeural",
       rate: `${rateVal}%`,
-      pitch: "-14Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
   if (key.includes("nandar")) {
     // Kang Nandar: Smooth, Soothing and Calm (Indonesian Elder Explainer)
-    const rateVal = Math.round(-2 * speedMultiplier);
+    const baseRate = -2 + cRate;
+    const basePitch = 1 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "id-ID-ArdiNeural",
       rate: `${rateVal}%`,
-      pitch: "+1Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
   if (key.includes("mangili")) {
     // Mangili: Encouraging & Hypnotic Sleep Story
     // Multi-Neural Voice: EmmaMultilingual gives tender, gentle, whisper-soft night lullaby
-    const rateVal = Math.round(-12 * speedMultiplier);
+    const baseRate = -12 + cRate;
+    const basePitch = -3 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "en-US-EmmaMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-3Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
   if (key.includes("adam")) {
     // Adam: Distinct, Deep and Engaging (Official ElevenLabs signature baritone)
     // Multi-Neural Voice: BrianMultilingual provides iconic deep resonance
-    const rateVal = Math.round(-4 * speedMultiplier);
+    const baseRate = -4 + cRate;
+    const basePitch = -2 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "en-US-BrianMultilingualNeural",
       rate: `${rateVal}%`,
-      pitch: "-2Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
   if (key.includes("jenna")) {
     // Jenna: Warm, Soft, and Sultry (Intimate English Narration)
-    const rateVal = Math.round(-6 * speedMultiplier);
+    const baseRate = -6 + cRate;
+    const basePitch = -2 + cPitch;
+    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
       voiceId: "en-US-JennyNeural",
       rate: `${rateVal}%`,
-      pitch: "-2Hz",
+      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
     };
   }
 
@@ -370,9 +396,9 @@ async function streamFromVoice(voiceId: string, pitch: string, rate: string, tex
 export async function synthesizeWithMsEdge(
   text: string,
   voiceKey: string,
-  options?: { speed?: number; stability?: number }
+  options?: { speed?: number; stability?: number; context?: ContextAnalysisResult }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
-  const config = getVoiceConfig(voiceKey, options?.speed, options?.stability);
+  const config = getVoiceConfig(voiceKey, options?.speed, options?.stability, options?.context);
 
   // Micro-pause cadence: ensure natural punctuation flow without dead air freezes
   const formattedText = text
@@ -412,8 +438,10 @@ export async function synthesizeSpeechDirect(
     speed?: number;
   }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
-  const isFormal = voiceKey.includes("formal") || voiceKey.includes("mahaputra") || (options?.stability ?? 0.35) >= 0.7;
-  const processedText = normalizeText(text, isFormal);
+  // ElevenLabs v4 Context & Semantic Prosody Analysis
+  const context = analyzeContext(text, voiceKey);
+  const isFormal = voiceKey.includes("formal") || voiceKey.includes("mahaputra") || context.mood === "authoritative" || (options?.stability ?? 0.35) >= 0.7;
+  const processedText = normalizeText(context.processedText, isFormal);
 
   // 1. Primary: WIULab Self-Hosted AI Gateway (StyleTTS2 / Seed-VC / CosyVoice)
   const gatewayUrl = process.env.AI_GATEWAY_URL || process.env.STYLETTS2_API_ROUTE || process.env.STYLETTS2_URL;
@@ -464,7 +492,7 @@ export async function synthesizeSpeechDirect(
   // 3. Guaranteed Autonomous Engine: WIULab Human-Feel Multi-Neural Engine
   // 100% Mandiri tanpa ElevenLabs API, bebas kuota, bebas token, zero downtime, multi-neural distinct voices
   try {
-    return await synthesizeWithMsEdge(processedText, voiceKey, options);
+    return await synthesizeWithMsEdge(processedText, voiceKey, { ...options, context });
   } catch (err: any) {
     console.error("WIULab Autonomous Neural Engine failed:", err);
     throw new Error("Gagal memproses sintesis suara mandiri: " + (err?.message || "Kesalahan jaringan"));
