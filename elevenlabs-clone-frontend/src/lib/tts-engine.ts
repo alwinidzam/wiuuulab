@@ -86,11 +86,14 @@ export function normalizeText(text: string, isFormal = false): string {
     result = result.replace(regex, replacement);
   }
 
+  // Natural comma, semicolon, and colon breath micro-pauses
+  result = result.replace(/([,;:])\s+/g, "$1 ... ");
+
   // Handle ElevenLabs latent prompt tags -> convert to acoustic pauses & expressive breathing
   result = result.replace(/\[(whispers?|whispering|bisik)\]/gi, " ... ");
   result = result.replace(/\[\/(whispers?|whispering|bisik)\]/gi, "");
-  result = result.replace(/\[(sendu|serak|sedih)\]/gi, " ... — ");
-  result = result.replace(/\[(pause|jeda|napas)\]/gi, " ... — ");
+  result = result.replace(/\[(sendu|serak|serak basah|sedih|rintih)\]/gi, " ... — ");
+  result = result.replace(/\[(pause|jeda|napas|tarik napas)\]/gi, " ... — ");
   result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, " ... ");
   result = result.replace(/\[.*?\]/g, ""); // strip remaining bracket tags
 
@@ -110,11 +113,11 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0): VoiceCo
 
   if (key.includes("athalea")) {
     // Athalea: Serak Basah & Sendu (Vocal Fry, Register Dada Dalam, Jeda Emosional Misterius)
-    const rateVal = Math.round(-15 * speedMultiplier);
+    const rateVal = Math.round(-16 * speedMultiplier);
     return {
       voiceId: "id-ID-GadisNeural",
       rate: `${rateVal}%`,
-      pitch: "-13Hz",
+      pitch: "-14Hz",
     };
   }
 
