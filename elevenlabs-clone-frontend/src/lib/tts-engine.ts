@@ -277,27 +277,27 @@ export function getVoiceConfig(voiceKey: string, speedMultiplier = 1.0, stabilit
   };
 }
 
-// Master acoustic reference profiles for Zero-Shot Hugging Face Voice Cloning
+// Master acoustic reference profiles for Zero-Shot Hugging Face Voice Cloning (Permanent Hosted Dataset)
 export const HF_VOICE_REFERENCES: Record<string, { audioUrl: string; refText: string }> = {
   athalea: {
     audioUrl: "https://wiuuulab.vercel.app/athalea_ref.mp3",
     refText: "Mari berkelana tanpa rencana. Biarkan semesta menuntun langkah kita.",
   },
   serena: {
-    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/workspace/6d57e0e7bcf24c97ae58ce33b31b1a15/voices/fpsPI3vlnQ0anCTPiHk5/APC5cakUwuYjiKzICXQa.mp3",
-    refText: "Di balik setiap kisah yang indah, selalu ada ketulusan yang tak terucap.",
+    audioUrl: "https://huggingface.co/datasets/qomariyahyahyah/wiuuulab-voice-samples/resolve/main/serena_heartfelt.mp3",
+    refText: "Serena is a warm, gentle, and naturally expressive Indonesian voice.",
   },
   ongky: {
-    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/workspace/143af1e0a2f8435e8c86be2236e7ad4d/voices/5YVVTVlHuEcIu0JBLbEF/53e42f55-e489-4999-b493-9b70de6617b6.mp3",
-    refText: "Selamat datang kembali bersama saya. Hari ini kita akan membahas strategi yang tenang dan terarah.",
+    audioUrl: "https://huggingface.co/datasets/qomariyahyahyah/wiuuulab-voice-samples/resolve/main/ongky_himawan.mp3",
+    refText: "A deep, calm, and resonant male voice with a confident tone.",
   },
   bowo: {
-    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/user/j8Gj4ZyujgaTQhT3NsmEf2mY6ww2/voices/LxiqOV1uxBCgYTeitAHf/FmZ6jgde73tcYTXqvq7U.mp3",
-    refText: "Kalian tidak akan pernah bisa lari dari kegelapan yang menanti.",
+    audioUrl: "https://huggingface.co/datasets/qomariyahyahyah/wiuuulab-voice-samples/resolve/main/bowo_hoarse.mp3",
+    refText: "A hoarse, deep voice to create a frightening and menacing impression.",
   },
   adam: {
-    audioUrl: "https://storage.googleapis.com/eleven-public-prod/database/workspace/b3709ae8839847b6a804736de5e5651c/voices/bfGb7JTLUnZebZRiFYyq/sQiMNu3kolXvAQGhCb2s.mp3",
-    refText: "In the depth of the night, every whisper carries weight.",
+    audioUrl: "https://huggingface.co/datasets/qomariyahyahyah/wiuuulab-voice-samples/resolve/main/adam_baritone.mp3",
+    refText: "Adam is a distinct, deep, and engaging American baritone narrator.",
   },
 };
 
