@@ -1,6 +1,7 @@
 export async function GET() {
   return Response.json({
     voices: [
+      // Indonesian Native Neural Voices
       {
         voice_id: "athalea",
         name: "Athalea (Sendu & Serak Basah • 1:1 Sample Clone 🕯️)",
@@ -15,6 +16,7 @@ export async function GET() {
       },
       {
         voice_id: "serena",
+        elevenlabs_voice_id: "fpsPI3vlnQ0anCTPiHk5",
         name: "Serena (Heartfelt Indonesian • Lembut & Hangat 🎙️)",
         category: "indonesian_heartfelt",
         labels: {
@@ -27,6 +29,7 @@ export async function GET() {
       },
       {
         voice_id: "alwi",
+        elevenlabs_voice_id: "R86jddkroI9bJwXFfjsr",
         name: "Alwi (Horror Baritone & Cinematic Storyteller 🎬)",
         category: "indonesian_horror_storyteller",
         labels: {
@@ -39,6 +42,7 @@ export async function GET() {
       },
       {
         voice_id: "ongky",
+        elevenlabs_voice_id: "5YVVTVlHuEcIu0JBLbEF",
         name: "Ongky Himawan (Calm & Deep Baritone 🎙️)",
         category: "indonesian_baritone",
         labels: {
@@ -51,6 +55,7 @@ export async function GET() {
       },
       {
         voice_id: "bowo",
+        elevenlabs_voice_id: "LxiqOV1uxBCgYTeitAHf",
         name: "Bowo (Intimidating and Hoarse ⚡)",
         category: "indonesian_horror",
         labels: {
@@ -63,6 +68,7 @@ export async function GET() {
       },
       {
         voice_id: "nandar",
+        elevenlabs_voice_id: "aK834gEOxQEtviMPgurT",
         name: "Kang Nandar (Smooth, Soothing and Calm 🍃)",
         category: "indonesian_storyteller",
         labels: {
@@ -75,6 +81,7 @@ export async function GET() {
       },
       {
         voice_id: "mangili",
+        elevenlabs_voice_id: "xw0L8SaiU5Mv7xqjcraJ",
         name: "Mangili (Encouraging & Sleep Story 🌙)",
         category: "indonesian_sleep_story",
         labels: {
@@ -86,10 +93,64 @@ export async function GET() {
         },
       },
       {
+        voice_id: "siti",
+        name: "Siti (Indonesian Casual & Jaksel Slang 🌸)",
+        category: "indonesian_casual",
+        labels: {
+          accent: "indonesian_jaksel",
+          gender: "female",
+          age: "young_adult",
+          use_case: "social media, tiktok, vlogs, casual dialogue, slang",
+          style: "santai, gaul, luwes, partikel tutur dong, sih, deh",
+        },
+      },
+      {
+        voice_id: "andi",
+        name: "Andi / Putra (Indonesian Casual & Creator 🎧)",
+        category: "indonesian_creator",
+        labels: {
+          accent: "indonesian",
+          gender: "male",
+          age: "young_adult",
+          use_case: "youtube gaming, shorts, podcast, modern creator",
+          style: "energik, santai, luwes, nada pemuda ramah",
+        },
+      },
+
+      // English & Global Neural Voices
+      {
         voice_id: "adam",
+        elevenlabs_voice_id: "pNInz6obpgDQGcFmaJgB",
         name: "Adam (Distinct, Deep and Engaging 🎙️)",
         category: "official_elevenlabs",
         labels: { accent: "american", gender: "male", age: "middle_aged", use_case: "signature narrator, cinematic horror, podcast" },
+      },
+      {
+        voice_id: "rachel",
+        elevenlabs_voice_id: "21m00Tcm4TlvDq8ikWAM",
+        name: "Rachel (Calm & Reflective Narration ✨)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "female", age: "young_adult", use_case: "audiobook, conversational, calm narrative" },
+      },
+      {
+        voice_id: "nicole",
+        name: "Nicole (Whisper & Breathy 🌙)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "female", age: "young", use_case: "whisper, meditation, delicate, ASMR" },
+      },
+      {
+        voice_id: "bella",
+        elevenlabs_voice_id: "EXAVITQu4vr4xnSDxMaL",
+        name: "Bella (Soft & Warm Narration 🌸)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "female", age: "middle_aged", use_case: "intimate reflective narration, romantic drama" },
+      },
+      {
+        voice_id: "antoni",
+        elevenlabs_voice_id: "ErXwobaYiN019PkySvjV",
+        name: "Antoni (Modulated & Energetic ⚡)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "male", age: "young", use_case: "commercial, animation, video game character" },
       },
       {
         voice_id: "jenna",
@@ -99,39 +160,68 @@ export async function GET() {
       },
       {
         voice_id: "george",
-        name: "George (Official ElevenLabs Warm Storyteller 🕯️)",
+        name: "George (Warm British Storyteller 🕯️)",
         category: "official_elevenlabs",
         labels: { accent: "british", gender: "male", age: "middle_aged", use_case: "warm captivating storyteller, dark tales" },
       },
       {
         voice_id: "sarah",
-        name: "Sarah (Official ElevenLabs Reassuring Narrator ✨)",
+        name: "Sarah (Reassuring Narrator ✨)",
         category: "official_elevenlabs",
         labels: { accent: "american", gender: "female", age: "young", use_case: "mature, reassuring, audiobook" },
       },
       {
-        voice_id: "bella",
-        name: "Bella (Official ElevenLabs Soft & Warm 🌸)",
-        category: "official_elevenlabs",
-        labels: { accent: "american", gender: "female", age: "middle_aged", use_case: "intimate reflective narration, romantic drama" },
-      },
-      {
         voice_id: "brian",
-        name: "Brian (Official ElevenLabs Deep Baritone 🎙️)",
+        name: "Brian (Deep Baritone 🎙️)",
         category: "official_elevenlabs",
         labels: { accent: "american", gender: "male", age: "middle_aged", use_case: "deep baritone narration, cinema, commercial" },
       },
       {
         voice_id: "jessica",
-        name: "Jessica (Official ElevenLabs Playful & Warm 🌻)",
+        name: "Jessica (Playful & Warm 🌻)",
         category: "official_elevenlabs",
         labels: { accent: "american", gender: "female", age: "young", use_case: "playful, conversational, commercial" },
       },
       {
         voice_id: "lily",
-        name: "Lily (Official ElevenLabs Velvety Smooth 🌿)",
+        name: "Lily (Velvety Smooth 🌿)",
         category: "official_elevenlabs",
         labels: { accent: "british", gender: "female", age: "middle_aged", use_case: "velvety, calm narration, documentary" },
+      },
+      {
+        voice_id: "arnold",
+        elevenlabs_voice_id: "VR6AewLTigWG4xSOukaG",
+        name: "Arnold (Crisp Action Narrator 🎬)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "male", age: "middle_aged", use_case: "action movie trailers, bold announcements" },
+      },
+      {
+        voice_id: "josh",
+        elevenlabs_voice_id: "TxGEqnHWrfWFTfGW9XjX",
+        name: "Josh (Deep Young Conversational 🎧)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "male", age: "young", use_case: "podcast, modern dialogue, natural conversational" },
+      },
+      {
+        voice_id: "sam",
+        elevenlabs_voice_id: "yoZ06aMxZJJ28mfd3POQ",
+        name: "Sam (Dynamic American Voice 🎙️)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "male", age: "young", use_case: "youtube narration, explainers" },
+      },
+      {
+        voice_id: "elli",
+        elevenlabs_voice_id: "MF3mGyEYCl7XYWbV9V6O",
+        name: "Elli (Emotional & Gentle 🌸)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "female", age: "young", use_case: "character dialogue, audio drama" },
+      },
+      {
+        voice_id: "domi",
+        elevenlabs_voice_id: "AZnzlk1XvdvUeBnXmlld",
+        name: "Domi (Confident & Strong 💼)",
+        category: "official_elevenlabs",
+        labels: { accent: "american", gender: "female", age: "young_adult", use_case: "tech reviews, tutorials, professional voiceover" },
       },
     ],
   });

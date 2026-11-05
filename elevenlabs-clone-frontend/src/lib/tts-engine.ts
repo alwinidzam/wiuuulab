@@ -128,7 +128,7 @@ export function getKokoroVoiceConfig(
   }
 
   // Serena: Heartfelt Indonesian (Novel & Poetry, warm emotional cadence)
-  if (key.includes("serena")) {
+  if (key.includes("serena") || key === "fpspi3vlnq0anctpihk5") {
     return {
       voice_names: ["af_heart", "af_bella"],
       speed: Math.round(1.0 * speedMultiplier * 100) / 100,
@@ -136,7 +136,7 @@ export function getKokoroVoiceConfig(
   }
 
   // Alwi: Horror Baritone (Cinematic dark suspenseful timbre)
-  if (key.includes("alwi")) {
+  if (key.includes("alwi") || key === "r86jddkroi9bjwxffjsr") {
     return {
       voice_names: ["am_onyx", "am_fenrir"],
       speed: Math.round(0.92 * speedMultiplier * 100) / 100,
@@ -144,7 +144,7 @@ export function getKokoroVoiceConfig(
   }
 
   // Ongky Himawan: Calm & Deep Baritone
-  if (key.includes("ongky")) {
+  if (key.includes("ongky") || key === "5yvvtvlhueciu0jblbef") {
     return {
       voice_names: ["am_michael", "am_adam"],
       speed: Math.round(0.96 * speedMultiplier * 100) / 100,
@@ -152,7 +152,7 @@ export function getKokoroVoiceConfig(
   }
 
   // Bowo: Intimidating and Hoarse (Creaky gravelly vocal fry)
-  if (key.includes("bowo")) {
+  if (key.includes("bowo") || key === "lxiqov1uxbcgyteitahf") {
     return {
       voice_names: ["am_fenrir", "am_onyx"],
       speed: Math.round(0.88 * speedMultiplier * 100) / 100,
@@ -160,7 +160,7 @@ export function getKokoroVoiceConfig(
   }
 
   // Kang Nandar: Smooth, Soothing and Calm (Indonesian Elder Explainer)
-  if (key.includes("nandar")) {
+  if (key.includes("nandar") || key === "ak834geoxqetvimpgurt") {
     return {
       voice_names: ["bm_george", "am_liam"],
       speed: Math.round(1.0 * speedMultiplier * 100) / 100,
@@ -168,10 +168,74 @@ export function getKokoroVoiceConfig(
   }
 
   // Mangili: Encouraging & Hypnotic Sleep Story
-  if (key.includes("mangili")) {
+  if (key.includes("mangili") || key === "xw0l8saiu5mv7xqjcraj") {
     return {
       voice_names: ["af_sky", "af_heart"],
       speed: Math.round(0.90 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Siti: Indonesian Casual & Jaksel Slang
+  if (key.includes("siti") || key.includes("jaksel")) {
+    return {
+      voice_names: ["af_sarah", "af_bella"],
+      speed: Math.round(1.08 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Andi Putra: Indonesian Casual & Creator
+  if (key.includes("andi") || key.includes("putra")) {
+    return {
+      voice_names: ["am_adam", "am_michael"],
+      speed: Math.round(1.04 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Rachel: ElevenLabs Signature Calm Narration
+  if (key.includes("rachel") || key === "21m00tcm4tlvdq8ikwam") {
+    return {
+      voice_names: ["af_nicole", "af_sarah"],
+      speed: Math.round(1.0 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Nicole: Whisper & Breathy
+  if (key.includes("nicole")) {
+    return {
+      voice_names: ["af_nicole"],
+      speed: Math.round(0.95 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Bella: Soft & Warm Romantic Narration
+  if (key.includes("bella") || key === "exavitqu4vr4xnsdxmal") {
+    return {
+      voice_names: ["af_bella"],
+      speed: Math.round(0.98 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Antoni: Modulated Energetic Voice
+  if (key.includes("antoni") || key === "erxwobayin019pkysvjv") {
+    return {
+      voice_names: ["am_onyx", "am_adam"],
+      speed: Math.round(1.02 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Sarah: Mature Audiobook Narrator
+  if (key.includes("sarah")) {
+    return {
+      voice_names: ["af_sarah"],
+      speed: Math.round(1.0 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Jenna: Warm, Soft and Sultry
+  if (key.includes("jenna")) {
+    return {
+      voice_names: ["af_heart", "af_bella"],
+      speed: Math.round(0.92 * speedMultiplier * 100) / 100,
     };
   }
 
@@ -183,15 +247,23 @@ export function getKokoroVoiceConfig(
     };
   }
 
+  // Lily: Velvety Smooth
+  if (key.includes("lily")) {
+    return {
+      voice_names: ["bf_emma", "bf_isabella"],
+      speed: Math.round(0.96 * speedMultiplier * 100) / 100,
+    };
+  }
+
   // Adam: Distinct, Deep and Engaging American Baritone
-  if (key.includes("adam")) {
+  if (key.includes("adam") || key === "pninz6obpgdqpcfmajgb") {
     return {
       voice_names: ["am_adam"],
       speed: Math.round(0.95 * speedMultiplier * 100) / 100,
     };
   }
 
-  // Brian: Thoughtful Narrator
+  // Brian: Deep Baritone
   if (key.includes("brian")) {
     return {
       voice_names: ["bm_daniel", "am_liam"],
@@ -199,11 +271,51 @@ export function getKokoroVoiceConfig(
     };
   }
 
-  // George: Warm Storyteller
+  // George: Warm British Storyteller
   if (key.includes("george")) {
     return {
       voice_names: ["bm_george"],
       speed: Math.round(0.98 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Arnold: Deep Raspy Action Narrator
+  if (key.includes("arnold") || key === "vr6aewltigwg4xsoukag") {
+    return {
+      voice_names: ["am_fenrir", "am_michael"],
+      speed: Math.round(0.95 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Josh: Deep Conversational Young
+  if (key.includes("josh") || key === "txgeqnhwrfwftfgw9xjx") {
+    return {
+      voice_names: ["am_michael"],
+      speed: Math.round(1.0 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Sam: American Dynamic
+  if (key.includes("sam") || key === "yoz06amxzjj28mfd3poq") {
+    return {
+      voice_names: ["am_adam"],
+      speed: Math.round(1.0 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Elli: Young Emotional
+  if (key.includes("elli") || key === "mf3mgyeycl7xywbv9v6o") {
+    return {
+      voice_names: ["af_sky"],
+      speed: Math.round(1.02 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Domi: Strong Conversational
+  if (key.includes("domi") || key === "aznzlk1xvdvuebnxmlld") {
+    return {
+      voice_names: ["af_sarah"],
+      speed: Math.round(1.0 * speedMultiplier * 100) / 100,
     };
   }
 
