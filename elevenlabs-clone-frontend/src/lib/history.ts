@@ -29,44 +29,49 @@ function formatDate(date: Date): string {
 }
 
 export async function getHistoryItems(service: string): Promise<HistoryItem[]> {
-  const session = await auth();
-  if (!session?.user.id) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return [];
+    }
+
+    const clips = await db.generatedAudioClip.findMany({
+      where: {
+        userId: session.user.id,
+        service: service,
+        failed: false,
+        s3Key: { not: null },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 50,
+    });
+
+    const items: HistoryItem[] = [];
+
+    for (const clip of clips) {
+      if (!clip.s3Key) continue;
+
+      try {
+        const audioUrl = await getPresignedUrl({ key: clip.s3Key });
+        items.push({
+          id: clip.id,
+          title: clip.text || clip.voice || "Audio Clip",
+          voice: clip.voice || "default",
+          date: formatDate(clip.createdAt),
+          audioUrl,
+          service: clip.service,
+          createdAt: clip.createdAt,
+        });
+      } catch {
+        // Continue if S3 presigned generation fails for a single clip
+      }
+    }
+
+    return items;
+  } catch (err) {
+    console.warn("getHistoryItems non-fatal fallback:", err);
     return [];
   }
-
-  const clips = await db.generatedAudioClip.findMany({
-    where: {
-      userId: session.user.id,
-      service: service,
-      failed: false,
-      s3Key: { not: null },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 50,
-  });
-
-  const items: HistoryItem[] = [];
-
-  for (const clip of clips) {
-    if (!clip.s3Key) continue;
-
-    try {
-      const audioUrl = await getPresignedUrl({ key: clip.s3Key });
-      items.push({
-        id: clip.id,
-        title: clip.text || clip.voice || "Audio Clip",
-        voice: clip.voice || "default",
-        date: formatDate(clip.createdAt),
-        audioUrl,
-        service: clip.service,
-        createdAt: clip.createdAt,
-      });
-    } catch {
-      // Continue if S3 presigned generation fails for a single clip
-    }
-  }
-
-  return items;
 }

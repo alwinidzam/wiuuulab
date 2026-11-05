@@ -15,8 +15,13 @@ export default async function SoundEffectsHistoryPage() {
   ];
 
   const service = "make-an-audio";
+  let historyItems: any[] = [];
 
-  const historyItems = await getHistoryItems(service);
+  try {
+    historyItems = await getHistoryItems(service);
+  } catch (error) {
+    console.warn("SoundEffectsHistoryPage getHistoryItems non-fatal fallback:", error);
+  }
 
   return (
     <PageLayout

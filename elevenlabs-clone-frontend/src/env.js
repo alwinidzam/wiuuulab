@@ -7,22 +7,19 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
-    DATABASE_URL: z.string().default("file:./db.sqlite"),
+    AUTH_SECRET: z.string().default("wiuuulab_super_secret_key_100_free_unlimited"),
+    DATABASE_URL: z.string().url().default("postgresql://neondb_owner:npg_0jCQDgdMn3Ey@ep-ancient-sunset-be3ccdor-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
-    AWS_ACCESS_KEY_ID: z.string(),
-    AWS_SECRET_ACCESS_KEY: z.string(),
-    AWS_REGION: z.string(),
-    S3_BUCKET_NAME: z.string(),
-    BACKEND_API_KEY: z.string(),
-    STYLETTS2_API_ROUTE: z.string(),
-    SEED_VC_API_ROUTE: z.string(),
-    MAKE_AN_AUDIO_API_ROUTE: z.string(),
+    AWS_ACCESS_KEY_ID: z.string().default("local"),
+    AWS_SECRET_ACCESS_KEY: z.string().default("local"),
+    AWS_REGION: z.string().default("us-east-1"),
+    S3_BUCKET_NAME: z.string().default("local"),
+    BACKEND_API_KEY: z.string().default("12345"),
+    STYLETTS2_API_ROUTE: z.string().default("http://127.0.0.1:8000"),
+    SEED_VC_API_ROUTE: z.string().default("http://127.0.0.1:8000"),
+    MAKE_AN_AUDIO_API_ROUTE: z.string().default("http://127.0.0.1:8000"),
   },
 
   /**

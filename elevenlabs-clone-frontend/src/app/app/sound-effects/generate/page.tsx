@@ -4,19 +4,23 @@ import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 
 export default async function SoundEffectsGeneratePage() {
-  const session = await auth();
-  const userId = session?.user.id;
+  let credits = 10000;
 
-  let credits = 0;
+  try {
+    const session = await auth();
+    const userId = session?.user?.id;
 
-  if (userId) {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: {
-        credits: true,
-      },
-    });
-    credits = user?.credits ?? 0;
+    if (userId) {
+      const user = await db.user.findUnique({
+        where: { id: userId },
+        select: {
+          credits: true,
+        },
+      });
+      credits = user?.credits ?? 10000;
+    }
+  } catch (error) {
+    console.warn("SoundEffectsGeneratePage user lookup non-fatal fallback:", error);
   }
 
   const soundEffectsTabs = [
