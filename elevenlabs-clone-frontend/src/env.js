@@ -8,7 +8,7 @@ export const env = createEnv({
    */
   server: {
     AUTH_SECRET: z.string().default("wiuuulab_super_secret_key_100_free_unlimited"),
-    DATABASE_URL: z.string().url().default("postgresql://neondb_owner:npg_0jCQDgdMn3Ey@ep-ancient-sunset-be3ccdor-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"),
+    DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),

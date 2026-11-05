@@ -84,7 +84,7 @@ const INDONESIAN_FORMAL_MAP: [RegExp, string][] = [
 export function normalizeText(text: string, isFormal = false): string {
   let result = text.replace(/\s+/g, " ");
 
-  // Natural punctuation flow (single space, NO artificial triple dots that cause dead air freezes)
+  // Natural punctuation flow
   result = result.replace(/([,;:])/g, "$1 ");
 
   // Handle emotional tags with natural cadences
@@ -94,455 +94,157 @@ export function normalizeText(text: string, isFormal = false): string {
   result = result.replace(/\[(clears throat|coughing|chuckling|sighing|laughing)\]/gi, " ");
   result = result.replace(/\[.*?\]/g, ""); // strip remaining bracket tags
 
-  // Ensure punctuation attaches cleanly
+  // Punctuation clean-up
   result = result.replace(/\s+([,.:;?!])/g, "$1");
   result = result.replace(/\.{4,}/g, "...");
   result = result.replace(/\s+/g, " ");
+
+  const map = isFormal ? INDONESIAN_FORMAL_MAP : INDONESIAN_CASUAL_MAP;
+  for (const [regex, replacement] of map) {
+    result = result.replace(regex, replacement);
+  }
+
   return result.trim();
 }
 
-export interface VoiceConfig {
-  voiceId: string;
-  rate: string;
-  pitch: string;
+export interface KokoroVoiceProfile {
+  voice_names: string[];
+  speed: number;
 }
 
-export function getVoiceConfig(
+// 1:1 Character Acoustic Mappings using Kokoro Neural Voice Blends
+export function getKokoroVoiceConfig(
   voiceKey: string,
-  speedMultiplier = 1.0,
-  stability = 0.35,
-  context?: ContextAnalysisResult
-): VoiceConfig {
+  speedMultiplier = 1.0
+): KokoroVoiceProfile {
   const key = voiceKey.toLowerCase().trim();
-  const cRate = context?.rateOffsetPercent ?? 0;
-  const cPitch = context?.pitchOffsetHz ?? 0;
 
+  // Athalea: Sendu & Serak-Serak Basah (Heartfelt, breathy, chest resonance)
   if (key.includes("athalea")) {
-    // Athalea: Sendu & Serak-Serak Basah (1:1 Matched Acoustic Clone from SAMPLE/audio [vocals].mp3)
-    // Formula: Pitch register dada (-14Hz) untuk getaran pita suara vocal fry, tempo pencerita diperlambat (-12%)
-    const baseRate = -12 + cRate;
-    const basePitch = -14 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
-      voiceId: "id-ID-GadisNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+      voice_names: ["af_heart", "af_nicole"],
+      speed: Math.round(0.95 * speedMultiplier * 100) / 100,
     };
   }
 
-  if (key.includes("alwi")) {
-    // Alwi: Horror Baritone (Cinematic Horror Narrator)
-    // Multi-Neural Voice: WilliamMultilingual gives rich dark suspenseful timbre distinct from Indonesian Ardi
-    const baseRate = -10 + cRate;
-    const basePitch = -5 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
-    return {
-      voiceId: "en-AU-WilliamMultilingualNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
-    };
-  }
-
+  // Serena: Heartfelt Indonesian (Novel & Poetry, warm emotional cadence)
   if (key.includes("serena")) {
-    // Serena: Heartfelt Indonesian (Novel & Poetry Narrator)
-    // Multi-Neural Voice: AvaMultilingual provides warm, soft, emotional cadence distinct from Gadis
-    const baseRate = -4 + cRate;
-    const basePitch = -2 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
-      voiceId: "en-US-AvaMultilingualNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+      voice_names: ["af_heart", "af_bella"],
+      speed: Math.round(1.0 * speedMultiplier * 100) / 100,
     };
   }
 
+  // Alwi: Horror Baritone (Cinematic dark suspenseful timbre)
+  if (key.includes("alwi")) {
+    return {
+      voice_names: ["am_onyx", "am_fenrir"],
+      speed: Math.round(0.92 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Ongky Himawan: Calm & Deep Baritone
   if (key.includes("ongky")) {
-    // Ongky Himawan: Calm & Deep Baritone
-    // Multi-Neural Voice: AndrewMultilingual delivers natural chest resonance distinct from Ardi
-    const baseRate = -5 + cRate;
-    const basePitch = -3 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
-      voiceId: "en-US-AndrewMultilingualNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+      voice_names: ["am_michael", "am_adam"],
+      speed: Math.round(0.96 * speedMultiplier * 100) / 100,
     };
   }
 
+  // Bowo: Intimidating and Hoarse (Creaky gravelly vocal fry)
   if (key.includes("bowo")) {
-    // Bowo: Intimidating and Hoarse (Creaky Vocal Fry)
-    // Formula: Native Ardi pitched down to gravelly sub-bass register
-    const baseRate = -8 + cRate;
-    const basePitch = -14 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
-      voiceId: "id-ID-ArdiNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+      voice_names: ["am_fenrir", "am_onyx"],
+      speed: Math.round(0.88 * speedMultiplier * 100) / 100,
     };
   }
 
+  // Kang Nandar: Smooth, Soothing and Calm (Indonesian Elder Explainer)
   if (key.includes("nandar")) {
-    // Kang Nandar: Smooth, Soothing and Calm (Indonesian Elder Explainer)
-    const baseRate = -2 + cRate;
-    const basePitch = 1 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
-      voiceId: "id-ID-ArdiNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+      voice_names: ["bm_george", "am_liam"],
+      speed: Math.round(1.0 * speedMultiplier * 100) / 100,
     };
   }
 
+  // Mangili: Encouraging & Hypnotic Sleep Story
   if (key.includes("mangili")) {
-    // Mangili: Encouraging & Hypnotic Sleep Story
-    // Multi-Neural Voice: EmmaMultilingual gives tender, gentle, whisper-soft night lullaby
-    const baseRate = -12 + cRate;
-    const basePitch = -3 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
-      voiceId: "en-US-EmmaMultilingualNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+      voice_names: ["af_sky", "af_heart"],
+      speed: Math.round(0.90 * speedMultiplier * 100) / 100,
     };
   }
 
-  if (key.includes("adam")) {
-    // Adam: Distinct, Deep and Engaging (Official ElevenLabs signature baritone)
-    // Multi-Neural Voice: BrianMultilingual provides iconic deep resonance
-    const baseRate = -4 + cRate;
-    const basePitch = -2 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
-    return {
-      voiceId: "en-US-BrianMultilingualNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
-    };
-  }
-
-  if (key.includes("jenna")) {
-    // Jenna: Warm, Soft, and Sultry (Intimate English Narration)
-    const baseRate = -6 + cRate;
-    const basePitch = -2 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
-    return {
-      voiceId: "en-US-JennyNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
-    };
-  }
-
-  if (key.includes("mahaputra") || key.includes("formal")) {
-    const rateVal = Math.round(-3 * speedMultiplier);
-    return {
-      voiceId: "id-ID-ArdiNeural",
-      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
-      pitch: "-2Hz",
-    };
-  }
-
-  if (key.includes("ujang") || key.includes("jawa")) {
-    const rateVal = Math.round(-8 * speedMultiplier);
-    return {
-      voiceId: "id-ID-ArdiNeural",
-      rate: `${rateVal}%`,
-      pitch: "-3Hz",
-    };
-  }
-
-  if (key.includes("andi") || key.includes("putra")) {
-    const rateVal = Math.round(5 * speedMultiplier);
-    return {
-      voiceId: "id-ID-ArdiNeural",
-      rate: `+${rateVal}%`,
-      pitch: "+1Hz",
-    };
-  }
-
-  if (key.includes("siti") || key.includes("casual") || key.includes("jaksel")) {
-    const rateVal = Math.round(4 * speedMultiplier);
-    return {
-      voiceId: "id-ID-GadisNeural",
-      rate: `+${rateVal}%`,
-      pitch: "+2Hz",
-    };
-  }
-
-  if (key.includes("ardi") || key.includes("horror")) {
-    const rateVal = Math.round(-10 * speedMultiplier);
-    return {
-      voiceId: "id-ID-ArdiNeural",
-      rate: `${rateVal}%`,
-      pitch: "-7Hz",
-    };
-  }
-
-  if (key.includes("andreas")) {
-    const rateVal = Math.round((speedMultiplier - 1.0) * 100);
-    return {
-      voiceId: "en-US-ChristopherNeural",
-      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
-      pitch: "+0Hz",
-    };
-  }
-
-  if (key.includes("woman")) {
-    const rateVal = Math.round((speedMultiplier - 1.0) * 100);
-    return {
-      voiceId: "en-US-JennyNeural",
-      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
-      pitch: "+0Hz",
-    };
-  }
-
-  if (key.includes("george")) {
-    // George: Warm Storyteller (Measured F0: 132Hz, Centroid: 2215Hz)
-    const baseRate = -4 + cRate;
-    const basePitch = -2 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
-    return {
-      voiceId: "en-US-ChristopherNeural",
-      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
-    };
-  }
-
+  // Jessica: Playful, Bright, Conversational
   if (key.includes("jessica")) {
-    // Jessica: Playful & Bright (Measured F0: 207Hz, Centroid: 2560Hz)
-    const baseRate = 4 + cRate;
-    const basePitch = 3 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
-      voiceId: "en-US-JennyNeural",
-      rate: `+${rateVal}%`,
-      pitch: `+${basePitch}Hz`,
+      voice_names: ["af_jessica"],
+      speed: Math.round(1.05 * speedMultiplier * 100) / 100,
     };
   }
 
+  // Adam: Distinct, Deep and Engaging American Baritone
+  if (key.includes("adam")) {
+    return {
+      voice_names: ["am_adam"],
+      speed: Math.round(0.95 * speedMultiplier * 100) / 100,
+    };
+  }
+
+  // Brian: Thoughtful Narrator
   if (key.includes("brian")) {
-    // Brian: Conversational Narrator (Measured F0: 120Hz, Centroid: 2366Hz)
-    const baseRate = -2 + cRate;
-    const basePitch = -1 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
     return {
-      voiceId: "en-US-BrianMultilingualNeural",
-      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+      voice_names: ["bm_daniel", "am_liam"],
+      speed: Math.round(1.0 * speedMultiplier * 100) / 100,
     };
   }
 
-  if (key.includes("sarah")) {
-    // Sarah: Reassuring Confident Female Narrator
-    const baseRate = -2 + cRate;
-    const basePitch = 0 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
+  // George: Warm Storyteller
+  if (key.includes("george")) {
     return {
-      voiceId: "en-US-AvaMultilingualNeural",
-      rate: `${rateVal >= 0 ? "+" : ""}${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
+      voice_names: ["bm_george"],
+      speed: Math.round(0.98 * speedMultiplier * 100) / 100,
     };
   }
 
-  if (key.includes("bella")) {
-    // Bella: Soft & Warm Intimate Narration
-    const baseRate = -6 + cRate;
-    const basePitch = -1 + cPitch;
-    const rateVal = Math.round(baseRate * speedMultiplier);
-    return {
-      voiceId: "en-US-EmmaMultilingualNeural",
-      rate: `${rateVal}%`,
-      pitch: `${basePitch >= 0 ? "+" : ""}${basePitch}Hz`,
-    };
-  }
-
-  // Default: Athalea Sendu Register Dada
-  const rateVal = Math.round(-14 * speedMultiplier);
+  // Default female heartfelt voice
   return {
-    voiceId: "id-ID-GadisNeural",
-    rate: `${rateVal}%`,
-    pitch: "-14Hz",
+    voice_names: ["af_heart"],
+    speed: Math.round(1.0 * speedMultiplier * 100) / 100,
   };
 }
 
-// Master acoustic reference profiles for Zero-Shot Voice Cloning (Exclusively from C:\elevenlab feels\SAMPLE)
-export interface MasterVoiceReference {
-  samplePath: string;
-  refText: string;
-}
-
-export const MASTER_SAMPLE_REFERENCES: Record<string, MasterVoiceReference> = {
-  athalea: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_athalea_test.mp3"),
-    refText: "Halo, selamat datang di wiuuulab.",
-  },
-  serena: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_serena_test.mp3"),
-    refText: "Ini adalah pengujian karakter suara Serena di wiuuulab.",
-  },
-  alwi: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_alwi_test.mp3"),
-    refText: "Ini adalah pengujian karakter suara Alwi di wiuuulab.",
-  },
-  ongky: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/ongky_himawan_official.mp3"),
-    refText: "Ini adalah karakter suara Ongky Himawan.",
-  },
-  bowo: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/bowo_hoarse_official.mp3"),
-    refText: "Ini adalah karakter suara Bowo.",
-  },
-  brian: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_brian_test.mp3"),
-    refText: "Ini adalah pengujian karakter suara Brian di wiuuulab.",
-  },
-  george: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_george_demokrasi.mp3"),
-    refText: "Dalam praktik demokrasi Pancasila kebebasan berpendapat adalah hak mendasar yang harus dijaga bersama demi keadilan seluruh rakyat.",
-  },
-  jessica: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/SAMPLE_jessica_playful.mp3"),
-    refText: "Halo semua! Hari ini kita akan membahas sesuatu yang sangat seru dan menyenangkan.",
-  },
-  adam: {
-    samplePath: path.resolve("c:/elevenlab feels/SAMPLE/adam_deep_official.mp3"),
-    refText: "This is Adam speaking with a distinct, deep, and engaging American baritone voice.",
-  },
-};
-
-export async function synthesizeZeroShotHF(
-  text: string,
-  voiceKey: string
-): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string } | null> {
-  const token = process.env.HF_TOKEN;
-  const key = voiceKey.toLowerCase();
-  
-  // Find matching reference profile
-  let refKey = "athalea";
-  if (key.includes("serena")) refKey = "serena";
-  else if (key.includes("alwi")) refKey = "alwi";
-  else if (key.includes("ongky")) refKey = "ongky";
-  else if (key.includes("bowo")) refKey = "bowo";
-  else if (key.includes("brian")) refKey = "brian";
-  else if (key.includes("george")) refKey = "george";
-  else if (key.includes("jessica")) refKey = "jessica";
-  else if (key.includes("adam")) refKey = "adam";
-  
-  const ref = MASTER_SAMPLE_REFERENCES[refKey] || MASTER_SAMPLE_REFERENCES.athalea;
-
-  if (!fs.existsSync(ref.samplePath)) {
-    console.warn(`Master sample file not found at ${ref.samplePath}. Continuing to resilient multi-neural engine.`);
-    return null;
-  }
-
-  try {
-    const { Client, handle_file } = await import("@gradio/client");
-    const connectOptions: any = {};
-    if (token) {
-      connectOptions.token = token;
-    }
-    const app = await Client.connect("mrfakename/E2-F5-TTS", connectOptions);
-
-    const result = await app.predict("/predict", {
-      ref_audio: handle_file(ref.samplePath),
-      ref_text: ref.refText,
-      gen_text: text,
-      remove_silence: false,
-    });
-
-    const audioUrl = (result.data as any)?.[0]?.url;
-    if (audioUrl) {
-      const res = await fetch(audioUrl);
-      if (res.ok) {
-        const arrayBuf = await res.arrayBuffer();
-        const buffer = Buffer.from(arrayBuf);
-        const base64Audio = buffer.toString("base64");
-        const dataUrl = `data:audio/wav;base64,${base64Audio}`;
-        const wordCount = text.split(/\s+/).length;
-        const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
-        const mins = Math.floor(durationSeconds / 60);
-        const secs = durationSeconds % 60;
-        return {
-          buffer,
-          dataUrl,
-          durationEstimate: `${mins}:${secs.toString().padStart(2, "0")}`,
-        };
-      }
-    }
-  } catch (err: any) {
-    console.warn(`Zero-Shot F5-TTS fallback for ${voiceKey}:`, err?.message || err);
-  }
-  return null;
-}
-
-async function streamFromVoice(voiceId: string, pitch: string, rate: string, text: string): Promise<Buffer> {
-  // 1. Try local wiuuulab Python Gateway
-  try {
-    const res = await fetch(`http://127.0.0.1:8000/api/v1/text-to-speech/${encodeURIComponent(voiceId)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, voice: voiceId }),
-    });
-    if (res.ok) {
-      const arr = await res.arrayBuffer();
-      return Buffer.from(arr);
-    }
-  } catch (_) {}
-
-  // 2. Direct Python edge_tts CLI (Node 24 safe, zero t.mask crash)
-  const { spawn } = await import("child_process");
-  return new Promise((resolve, reject) => {
-    const script = `
-import asyncio, sys, edge_tts
-async def main():
-    comm = edge_tts.Communicate(text=sys.argv[1], voice=sys.argv[2], rate=sys.argv[3], pitch=sys.argv[4])
-    d = bytearray()
-    async for c in comm.stream():
-        if c["type"] == "audio":
-            d.extend(c["data"])
-    sys.stdout.buffer.write(d)
-asyncio.run(main())
-`;
-    const child = spawn("python", ["-c", script, text, voiceId, rate, pitch]);
-    const chunks: Buffer[] = [];
-    child.stdout.on("data", (c) => chunks.push(c));
-    child.on("close", (code) => {
-      if (code === 0 && chunks.length > 0) {
-        resolve(Buffer.concat(chunks));
-      } else {
-        reject(new Error(`Python synthesis exit code: ${code}`));
-      }
-    });
-    child.on("error", reject);
-  });
-}
-
-export async function synthesizeWithMsEdge(
+export async function synthesizeWithKokoroNeural(
   text: string,
   voiceKey: string,
-  options?: { speed?: number; stability?: number; context?: ContextAnalysisResult }
+  options?: { speed?: number }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
-  const config = getVoiceConfig(voiceKey, options?.speed, options?.stability, options?.context);
+  const { Client } = await import("@gradio/client");
+  const config = getKokoroVoiceConfig(voiceKey, options?.speed ?? 1.0);
 
-  // Micro-pause cadence: ensure natural punctuation flow without dead air freezes
-  const formattedText = text
-    .replace(/([,;:])/g, "$1 ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const app = await Client.connect("remsky/Kokoro-TTS-Zero");
+  const result = await app.predict("/generate_speech_from_ui", {
+    text: text,
+    voice_names: config.voice_names,
+    speed: config.speed,
+  });
 
-  let buffer: Buffer;
-  try {
-    buffer = await streamFromVoice(config.voiceId, config.pitch, config.rate, formattedText);
-  } catch (err: any) {
-    console.warn(`Primary voice ${config.voiceId} connection drop (${err.message}). Activating zero-crash fallback...`);
-    const isFemale = config.voiceId.includes("Female") || config.voiceId.includes("Gadis") || config.voiceId.includes("Ava") || config.voiceId.includes("Emma");
-    const fallbackId = isFemale ? "id-ID-GadisNeural" : "id-ID-ArdiNeural";
-    buffer = await streamFromVoice(fallbackId, config.pitch, config.rate, formattedText);
+  const audioUrl = (result.data as any)?.[0]?.url;
+  if (!audioUrl) {
+    throw new Error("Kokoro Neural Engine tidak mengembalikan data audio");
   }
 
+  const res = await fetch(audioUrl);
+  if (!res.ok) {
+    throw new Error(`Gagal mengunduh audio hasil sintesis: HTTP ${res.status}`);
+  }
+
+  const arrayBuffer = await res.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
   const base64Audio = buffer.toString("base64");
-  const isWav = buffer.subarray(0, 4).toString() === "RIFF";
-  const dataUrl = `data:${isWav ? "audio/wav" : "audio/mpeg"};base64,${base64Audio}`;
-  const wordCount = formattedText.split(/\s+/).length;
+  const dataUrl = `data:audio/wav;base64,${base64Audio}`;
+
+  const wordCount = text.split(/\s+/).length;
   const durationSeconds = Math.max(1, Math.round(wordCount / 2.5));
   const mins = Math.floor(durationSeconds / 60);
   const secs = durationSeconds % 60;
@@ -562,25 +264,36 @@ export async function synthesizeSpeechDirect(
     speed?: number;
   }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
-  // ElevenLabs v4 Context & Semantic Prosody Analysis
+  // 1. Text Context & Semantic Analysis
   const context = analyzeContext(text, voiceKey);
-  const isFormal = voiceKey.includes("formal") || voiceKey.includes("mahaputra") || context.mood === "authoritative" || (options?.stability ?? 0.35) >= 0.7;
+  const isFormal =
+    voiceKey.includes("formal") ||
+    voiceKey.includes("mahaputra") ||
+    context.mood === "authoritative" ||
+    (options?.stability ?? 0.35) >= 0.7;
   const processedText = normalizeText(context.processedText, isFormal);
 
-  // 1. Primary: WIULab Self-Hosted AI Gateway (StyleTTS2 / Seed-VC / CosyVoice)
-  const gatewayUrl = process.env.AI_GATEWAY_URL || process.env.STYLETTS2_API_ROUTE || process.env.STYLETTS2_URL;
-  if (gatewayUrl) {
+  // 2. Primary: Local Self-Hosted AI Gateway (if configured & running)
+  const gatewayUrl =
+    process.env.AI_GATEWAY_URL ||
+    process.env.STYLETTS2_API_ROUTE ||
+    process.env.STYLETTS2_URL;
+
+  if (gatewayUrl && !gatewayUrl.includes("127.0.0.1")) {
     try {
-      const res = await fetch(`${gatewayUrl}/api/v1/text-to-speech/${encodeURIComponent(voiceKey)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: processedText,
-          voice: voiceKey,
-          speed: options?.speed ?? 1.0,
-          stability: options?.stability ?? 0.35,
-        }),
-      });
+      const res = await fetch(
+        `${gatewayUrl}/api/v1/text-to-speech/${encodeURIComponent(voiceKey)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: processedText,
+            voice: voiceKey,
+            speed: options?.speed ?? 1.0,
+            stability: options?.stability ?? 0.35,
+          }),
+        }
+      );
       if (res.ok) {
         const arrayBuffer = await res.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
@@ -598,29 +311,19 @@ export async function synthesizeSpeechDirect(
         };
       }
     } catch (gwErr) {
-      console.warn("WIULab Self-Hosted Gateway synthesis attempt:", gwErr);
+      console.warn("Self-Hosted Gateway attempt bypassed:", gwErr);
     }
   }
 
-  // 2. High-Fidelity Zero-Shot Voice Cloning via Hugging Face F5-TTS Flow Matching
-  if (process.env.USE_HF_ZEROSHOT === "true") {
-    try {
-      const hfResult = await synthesizeZeroShotHF(processedText, voiceKey);
-      if (hfResult) {
-        return hfResult;
-      }
-    } catch (hfErr) {
-      console.warn("Hugging Face Zero-Shot synthesis fallback:", hfErr);
-    }
-  }
-
-  // 3. Guaranteed Autonomous Engine: WIULab Human-Feel Multi-Neural Engine
-  // 100% Mandiri tanpa ElevenLabs API, bebas kuota, bebas token, zero downtime, multi-neural distinct voices
+  // 3. Autonomous High-Fidelity Kokoro Neural Engine (Zero ElevenLabs, Zero Edge-TTS, Zero Python)
   try {
-    return await synthesizeWithMsEdge(processedText, voiceKey, { ...options, context });
+    return await synthesizeWithKokoroNeural(processedText, voiceKey, options);
   } catch (err: any) {
-    console.error("WIULab Autonomous Neural Engine failed:", err);
-    throw new Error("Gagal memproses sintesis suara mandiri: " + (err?.message || "Kesalahan jaringan"));
+    console.error("Kokoro Neural Engine error:", err);
+    throw new Error(
+      "Gagal memproses sintesis suara mandiri: " +
+        (err?.message || "Kesalahan jaringan")
+    );
   }
 }
 
@@ -658,10 +361,17 @@ export function generateProceduralSFX(
   const samples = new Float32Array(numSamples);
   const p = prompt.toLowerCase();
 
-  const isExplosionOrHit = /boom|hit|impact|punch|kick|explosion|thunder|gun|shot|blast|strike|slam/.test(p);
-  const isWhooshOrWind = /whoosh|swoosh|wind|transition|flyby|breeze|air|fast|zoom/.test(p);
-  const isSciFiOrLaser = /laser|blaster|scifi|sci-fi|beep|robot|alien|energy|zap|cyber/.test(p);
-  const isWaterOrRain = /water|rain|river|ocean|wave|splash|drop|stream/.test(p);
+  const isExplosionOrHit =
+    /boom|hit|impact|punch|kick|explosion|thunder|gun|shot|blast|strike|slam/.test(
+      p
+    );
+  const isWhooshOrWind =
+    /whoosh|swoosh|wind|transition|flyby|breeze|air|fast|zoom/.test(p);
+  const isSciFiOrLaser =
+    /laser|blaster|scifi|sci-fi|beep|robot|alien|energy|zap|cyber/.test(p);
+  const isWaterOrRain = /water|rain|river|ocean|wave|splash|drop|stream/.test(
+    p
+  );
 
   for (let i = 0; i < numSamples; i++) {
     const t = i / sampleRate;
@@ -691,7 +401,7 @@ export function generateProceduralSFX(
     } else {
       const env = Math.sin(Math.PI * progress);
       const f1 = Math.sin(2 * Math.PI * 130.81 * t);
-      const f2 = Math.sin(2 * Math.PI * 196.00 * t) * 0.6;
+      const f2 = Math.sin(2 * Math.PI * 196.0 * t) * 0.6;
       const f3 = Math.sin(2 * Math.PI * 261.63 * t) * 0.3;
       const drone = (f1 + f2 + f3) * 0.3;
       const air = (Math.random() * 2 - 1) * 0.08;
@@ -721,14 +431,13 @@ export async function synthesizeSoundEffect(
   }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
   const safePrompt = prompt.trim();
-  const duration = options?.duration_seconds ?? Math.min(10, Math.max(3, Math.round(safePrompt.length / 12)));
-  const promptInfluence = options?.prompt_influence ?? 0.3;
-  const loop = options?.loop ?? false;
-  const modelId = options?.model_id ?? "eleven_text_to_sound_v3";
+  const duration =
+    options?.duration_seconds ??
+    Math.min(10, Math.max(3, Math.round(safePrompt.length / 12)));
 
-  // 1. Primary: Self-Hosted Make-An-Audio / Gateway (100% Free & Unlimited)
-  const sfxGatewayUrl = process.env.MAKE_AN_AUDIO_URL || process.env.AI_GATEWAY_URL;
-  if (sfxGatewayUrl) {
+  const sfxGatewayUrl =
+    process.env.MAKE_AN_AUDIO_URL || process.env.AI_GATEWAY_URL;
+  if (sfxGatewayUrl && !sfxGatewayUrl.includes("127.0.0.1")) {
     try {
       const res = await fetch(`${sfxGatewayUrl}/api/v1/sound-generation`, {
         method: "POST",
@@ -755,7 +464,6 @@ export async function synthesizeSoundEffect(
     }
   }
 
-  // 2. Guaranteed Autonomous Engine: Organic Procedural Foley Synthesizer
-  // Guarantees sound effects are 100% autonomous, zero external API, zero vocal formants
+  // 100% Autonomous Foley Synthesizer
   return generateProceduralSFX(safePrompt, duration);
 }
