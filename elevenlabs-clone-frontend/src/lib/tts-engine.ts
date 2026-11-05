@@ -368,6 +368,70 @@ export async function synthesizeWithKokoroNeural(
   };
 }
 
+// Dynamic runtime gateway cache
+let cachedGatewayUrl: string | null = null;
+let lastCacheCheck = 0;
+
+export function resolveUniversalVoice(requestedVoice?: string): string {
+  if (!requestedVoice) return "athalea";
+  const v = requestedVoice.toLowerCase().trim();
+
+  // OpenAI official voice aliases -> map to closest signature timbre
+  if (v === "alloy") return "athalea";
+  if (v === "echo") return "alwi";
+  if (v === "fable") return "george";
+  if (v === "onyx") return "ongky";
+  if (v === "nova") return "serena";
+  if (v === "shimmer") return "siti";
+
+  // Semantic intent & emotional aliases
+  if (v.includes("horror") || v.includes("misteri") || v.includes("scary")) return "alwi";
+  if (v.includes("sendu") || v.includes("sedih") || v.includes("puisi") || v.includes("monolog")) return "athalea";
+  if (v.includes("hangat") || v.includes("cerita") || v.includes("novel") || v.includes("gentle")) return "serena";
+  if (v.includes("gaul") || v.includes("santai") || v.includes("jaksel") || v.includes("casual")) return "siti";
+  if (v.includes("creator") || v.includes("youtube") || v.includes("gaming") || v.includes("podcast")) return "andi";
+  if (v.includes("wibawa") || v.includes("formal") || v.includes("deep") || v.includes("berita")) return "ongky";
+  if (v.includes("serak") || v.includes("berat") || v.includes("villain")) return "bowo";
+  if (v.includes("dongeng") || v.includes("ramah") || v.includes("santun")) return "nandar";
+  if (v.includes("tidur") || v.includes("sleep") || v.includes("meditasi")) return "mangili";
+
+  return v;
+}
+
+export async function getEffectiveGatewayUrl(): Promise<string | null> {
+  if (cachedGatewayUrl && Date.now() - lastCacheCheck < 15000) {
+    return cachedGatewayUrl;
+  }
+
+  // Check database (stored in Post table with GATEWAY_URL: prefix)
+  try {
+    const { db } = await import("~/server/db");
+    const record = await db.post.findFirst({
+      where: { name: { startsWith: "GATEWAY_URL:" } },
+      orderBy: { updatedAt: "desc" },
+    });
+    if (record) {
+      cachedGatewayUrl = record.name.replace("GATEWAY_URL:", "").trim();
+      lastCacheCheck = Date.now();
+      return cachedGatewayUrl;
+    }
+  } catch {}
+
+  // Fallback to process.env
+  cachedGatewayUrl =
+    process.env.AI_GATEWAY_URL ||
+    process.env.STYLETTS2_API_ROUTE ||
+    process.env.STYLETTS2_URL ||
+    null;
+  lastCacheCheck = Date.now();
+  return cachedGatewayUrl;
+}
+
+export function setMemoryGatewayUrl(url: string) {
+  cachedGatewayUrl = url;
+  lastCacheCheck = Date.now();
+}
+
 export async function synthesizeSpeechDirect(
   text: string,
   voiceKey: string,
@@ -377,31 +441,31 @@ export async function synthesizeSpeechDirect(
     language?: "id" | "en";
   }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
+  // 0. Universal Voice Resolution (Any voice name, OpenAI alias, or emotion)
+  const resolvedVoice = resolveUniversalVoice(voiceKey);
+
   // 1. Text Context & Semantic Analysis
-  const context = analyzeContext(text, voiceKey);
+  const context = analyzeContext(text, resolvedVoice);
   const isFormal =
-    voiceKey.includes("formal") ||
-    voiceKey.includes("mahaputra") ||
+    resolvedVoice.includes("formal") ||
+    resolvedVoice.includes("mahaputra") ||
     context.mood === "authoritative" ||
     (options?.stability ?? 0.35) >= 0.7;
   const processedText = normalizeText(context.processedText, isFormal);
 
-  // 2. Primary: Local Self-Hosted AI Gateway (if configured & running)
-  const gatewayUrl =
-    process.env.AI_GATEWAY_URL ||
-    process.env.STYLETTS2_API_ROUTE ||
-    process.env.STYLETTS2_URL;
+  // 2. Primary: Local Self-Hosted AI Gateway (dynamic from DB or ENV)
+  const gatewayUrl = await getEffectiveGatewayUrl();
 
   if (gatewayUrl && !gatewayUrl.includes("127.0.0.1")) {
     try {
       const res = await fetch(
-        `${gatewayUrl}/api/v1/text-to-speech/${encodeURIComponent(voiceKey)}`,
+        `${gatewayUrl}/api/v1/text-to-speech/${encodeURIComponent(resolvedVoice)}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             text: processedText,
-            voice: voiceKey,
+            voice: resolvedVoice,
             speed: options?.speed ?? 1.0,
             stability: options?.stability ?? 0.35,
             language: options?.language ?? "id",
