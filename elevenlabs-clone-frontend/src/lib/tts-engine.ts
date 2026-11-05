@@ -262,6 +262,7 @@ export async function synthesizeSpeechDirect(
   options?: {
     stability?: number;
     speed?: number;
+    language?: "id" | "en";
   }
 ): Promise<{ buffer: Buffer; dataUrl: string; durationEstimate: string }> {
   // 1. Text Context & Semantic Analysis
@@ -291,6 +292,7 @@ export async function synthesizeSpeechDirect(
             voice: voiceKey,
             speed: options?.speed ?? 1.0,
             stability: options?.stability ?? 0.35,
+            language: options?.language ?? "id",
           }),
         }
       );

@@ -9,7 +9,7 @@ import { ServiceType } from "~/types/services";
 export async function generateTextToSpeech(
   text: string,
   voice: string,
-  options?: { stability?: number; speed?: number },
+  options?: { stability?: number; speed?: number; language?: "id" | "en" },
 ) {
   const session = await auth();
   if (!session?.user?.id) {

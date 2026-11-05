@@ -53,7 +53,12 @@ export function PageLayout({
   }, [setMobileScreen]);
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-sky-100 selection:text-sky-900 overflow-hidden">
+    <div className="flex h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden relative">
+      {/* Ambient Blur Blue Glow Meshes */}
+      <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl -z-10" />
+      <div className="pointer-events-none absolute top-1/4 -right-24 w-[32rem] h-[32rem] rounded-full bg-sky-400/12 blur-3xl -z-10" />
+      <div className="pointer-events-none absolute -bottom-24 left-1/3 w-96 h-96 rounded-full bg-indigo-500/8 blur-3xl -z-10" />
+
       {/* Desktop Sidebar */}
       <div className="hidden lg:block z-30">
         <Sidebar />
@@ -87,12 +92,12 @@ export function PageLayout({
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden relative">
         {/* Apple HIG Top Bar with Frosted Liquid Glass */}
-        <header className="liquid-glass border-b border-white/80 sticky top-0 z-20 px-6 h-16 flex items-center justify-between shadow-xs">
+        <header className="bg-white/80 backdrop-blur-xl border-b border-blue-100/70 sticky top-0 z-20 px-6 h-16 flex items-center justify-between shadow-[0_1px_10px_rgba(59,130,246,0.03)]">
           <div className="flex items-center space-x-3">
             {isMobileScreen && (
               <button
                 onClick={toggleMobileDrawer}
-                className="mr-2 rounded-xl p-2 text-slate-600 hover:bg-sky-50 hover:text-sky-700 transition-colors lg:hidden"
+                className="mr-2 rounded-xl p-2 text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors lg:hidden"
               >
                 <IoMenu className="h-5 w-5" />
               </button>
@@ -103,7 +108,7 @@ export function PageLayout({
 
             {/* Apple HIG Segmented Tab Pills */}
             {tabs && tabs.length > 0 && (
-              <div className="ml-4 flex items-center gap-1.5 p-1 rounded-full bg-slate-100/80 border border-slate-200/60 shadow-inner">
+              <div className="ml-4 flex items-center gap-1.5 p-1 rounded-full bg-slate-100/90 border border-blue-100/70 shadow-inner">
                 {tabs.map((tab) => {
                   const isActive = pathname === tab.path;
                   return (
@@ -112,7 +117,7 @@ export function PageLayout({
                       href={tab.path}
                       className={`px-3.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
                         isActive
-                          ? "liquid-glass-active shadow-sm"
+                          ? "bg-white text-blue-700 shadow-sm border border-blue-200/60"
                           : "text-slate-600 hover:text-slate-950 hover:bg-white/60"
                       }`}
                     >
@@ -125,25 +130,22 @@ export function PageLayout({
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-50 border border-sky-200/80 text-[11px] font-semibold text-sky-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/90 border border-blue-200/80 text-[11px] font-semibold text-blue-700 shadow-xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse"></span>
               Neural v4
             </span>
           </div>
         </header>
 
         {/* Studio Workspace Content */}
-        <div className="flex-1 overflow-auto bg-[#f8fafc] relative">
-          {/* Subtle Ambient Glow Orb */}
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-sky-100/40 rounded-full blur-3xl pointer-events-none -z-10"></div>
-
+        <div className="flex-1 overflow-auto bg-transparent relative">
           <div className="flex h-full">
             <main className="flex-1 px-6 py-6 overflow-y-auto">
               <div className="flex h-full flex-col max-w-5xl mx-auto">{children}</div>
             </main>
 
             {showSidebar && service && (
-              <aside className="w-80 border-l border-slate-200/80 bg-white/70 backdrop-blur-xl hidden xl:block overflow-y-auto">
+              <aside className="w-88 lg:w-96 xl:w-[410px] shrink-0 border-l border-blue-100/70 bg-white/80 backdrop-blur-2xl hidden md:flex flex-col h-full overflow-hidden shadow-[-4px_0_24px_-4px_rgba(59,130,246,0.04)]">
                 <SpeechSidebar historyItems={historyItems} service={service} />
               </aside>
             )}

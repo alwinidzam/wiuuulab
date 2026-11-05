@@ -46,7 +46,7 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
 
   return (
     <div
-      className={`${isExpanded ? "w-64" : "w-16"} flex h-full flex-col border-r border-slate-200/70 bg-white/75 backdrop-blur-xl px-3 py-4 transition-all duration-300 z-30`}
+      className={`${isExpanded ? "w-64" : "w-16"} flex h-full flex-col border-r border-blue-100/70 bg-white/80 backdrop-blur-xl px-3 py-4 transition-all duration-300 z-30`}
       onMouseEnter={() => !isMobile && setIsHovered(true)}
       onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
@@ -67,16 +67,16 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
         {!isMobile && (
           <button
             onClick={() => setIsPinned(!isPinned)}
-            className="flex h-8 w-8 items-center justify-center rounded-xl transition-all hover:bg-sky-50 hover:text-sky-600 text-slate-400"
+            className="flex h-8 w-8 items-center justify-center rounded-xl transition-all hover:bg-blue-50 hover:text-blue-600 text-slate-400"
             title={isPinned ? "Unpin sidebar" : "Pin sidebar"}
           >
             <div
-              className={`flex h-8 w-8 items-center justify-center transition-all ${isPinned ? "rounded-xl bg-sky-50 text-sky-600 border border-sky-100" : "text-slate-400"}`}
+              className={`flex h-8 w-8 items-center justify-center transition-all ${isPinned ? "rounded-xl bg-blue-50 text-blue-600 border border-blue-100" : "text-slate-400"}`}
             >
               {isExpanded ? (
                 <IoPinOutline className="h-4 w-4" />
               ) : (
-                <div className="flex h-fit w-fit items-center justify-center rounded-lg bg-sky-600 px-2 py-0.5 text-white shadow-xs">
+                <div className="flex h-fit w-fit items-center justify-center rounded-lg bg-blue-600 px-2 py-0.5 text-white shadow-xs">
                   <span className="text-xs font-bold">W</span>
                 </div>
               )}
@@ -196,13 +196,13 @@ function SidebarButton({
       href={href}
       className={`flex w-full items-center rounded-xl px-2.5 py-2 text-sm transition-all duration-200 ${
         isActive
-          ? "bg-sky-50/90 text-sky-800 border border-sky-200/80 shadow-xs font-semibold"
+          ? "bg-blue-50/90 text-blue-800 border border-blue-200/80 shadow-xs font-semibold"
           : "text-slate-600 hover:text-slate-900 hover:bg-white/70 font-medium"
       }`}
     >
       <div
         className={`flex h-5 w-5 flex-shrink-0 items-center justify-center transition-colors ${
-          isActive ? "text-sky-600" : "text-slate-400"
+          isActive ? "text-blue-600" : "text-slate-400"
         }`}
       >
         {icon}
